@@ -1,0 +1,2 @@
+Letakkan berkas model 3D (.glb / .gltf) dari Sketchfab di folder ini.
+Contoh: kompor.glb, kulkas.glb, meja.glb, rak-bumbu.glb

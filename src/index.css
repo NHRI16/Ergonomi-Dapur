@@ -1,0 +1,260 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+
+  --color-arang-950: #0e1113;
+  --color-arang-900: #14181b;
+  --color-arang-800: #1d2226;
+  --color-arang-700: #2a3036;
+  --color-krem-50: #faf6ee;
+  --color-krem-100: #f3ecdd;
+  --color-krem-300: #e4d7bd;
+  --color-terakota-400: #e08a63;
+  --color-terakota-500: #c96f4a;
+  --color-terakota-600: #ac5433;
+
+  --animate-masuk-atas: masuk-atas 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-masuk-kanan: masuk-kanan 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-layu-masuk: layu-masuk 0.3s ease both;
+  --animate-nadi-lembut: nadi-lembut 2.4s ease-in-out infinite;
+  --animate-putar-pelan: putar-pelan 14s linear infinite;
+}
+
+@keyframes masuk-atas {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes masuk-kanan {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes layu-masuk {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes nadi-lembut {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.045); opacity: 0.9; }
+}
+@keyframes putar-pelan {
+  to { transform: rotate(360deg); }
+}
+@keyframes pindar {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+  50% { box-shadow: 0 0 0 6px rgba(248, 113, 113, 0.08); }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #0e1113;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* ---------- Komponen utilitas HUD ---------- */
+
+.kaca {
+  background: rgba(16, 19, 22, 0.68);
+  backdrop-filter: blur(14px) saturate(1.25);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  border: 1px solid rgba(244, 236, 221, 0.09);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.kaca-terang {
+  background: rgba(250, 246, 238, 0.82);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid rgba(20, 24, 27, 0.08);
+  box-shadow: 0 12px 40px rgba(20, 24, 27, 0.12);
+}
+
+.keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.55rem;
+  height: 1.45rem;
+  padding: 0 0.42rem;
+  border-radius: 0.375rem;
+  background: linear-gradient(180deg, rgba(250, 246, 238, 0.14), rgba(250, 246, 238, 0.05));
+  border: 1px solid rgba(250, 246, 238, 0.22);
+  border-bottom-width: 2px;
+  color: #f3ecdd;
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.keycap-terang {
+  background: linear-gradient(180deg, #ffffff, #eee7d8);
+  border: 1px solid rgba(20, 24, 27, 0.22);
+  border-bottom-width: 2px;
+  color: #1d2226;
+}
+
+.teks-display {
+  font-family: var(--font-display);
+}
+
+.bilah-halus::-webkit-scrollbar {
+  width: 5px;
+}
+.bilah-halus::-webkit-scrollbar-thumb {
+  background: rgba(250, 246, 238, 0.18);
+  border-radius: 999px;
+}
+.bilah-halus::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Slider */
+input[type="range"].geser {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f59e0b var(--isi, 50%), rgba(250, 246, 238, 0.14) var(--isi, 50%));
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"].geser::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background: #faf6ee;
+  border: 3px solid #f59e0b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease;
+}
+input[type="range"].geser::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+input[type="range"].geser::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background: #faf6ee;
+  border: 3px solid #f59e0b;
+}
+
+/* Crosshair — empat busur tersegmentasi */
+.crosshair-cincin {
+  background: conic-gradient(
+    rgba(250, 246, 238, 0.85) 0deg 74deg, transparent 74deg 90deg,
+    rgba(250, 246, 238, 0.85) 90deg 164deg, transparent 164deg 180deg,
+    rgba(250, 246, 238, 0.85) 180deg 254deg, transparent 254deg 270deg,
+    rgba(250, 246, 238, 0.85) 270deg 344deg, transparent 344deg 360deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 56%, #000 58%, #000 63%, transparent 65%);
+  mask: radial-gradient(circle, transparent 56%, #000 58%, #000 63%, transparent 65%);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease, filter 0.22s ease;
+}
+.crosshair-cincin.aktif {
+  background: conic-gradient(
+    #fbbf24 0deg 74deg, transparent 74deg 90deg,
+    #fbbf24 90deg 164deg, transparent 164deg 180deg,
+    #fbbf24 180deg 254deg, transparent 254deg 270deg,
+    #fbbf24 270deg 344deg, transparent 344deg 360deg
+  );
+  transform: rotate(45deg) scale(0.86);
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.55));
+}
+
+/* Gradasi keterbacaan HUD */
+.scrim-atas {
+  background: linear-gradient(180deg, rgba(10, 12, 14, 0.45), transparent);
+}
+.scrim-bawah {
+  background: linear-gradient(0deg, rgba(10, 12, 14, 0.4), transparent);
+}
+
+/* Kartu bagian dalam panel */
+.kartu-bagian {
+  border: 1px solid rgba(250, 246, 238, 0.08);
+  background: rgba(250, 246, 238, 0.045);
+  border-radius: 1rem;
+}
+
+/* Titik status hidup */
+.titik-hidup {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+.titik-hidup::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.5;
+  animation: nadi-lembut 2s ease-in-out infinite;
+}
+
+/* Sorotan berjalan pada tombol CTA */
+.cta-utama {
+  position: relative;
+  overflow: hidden;
+}
+.cta-utama::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  width: 40%;
+  left: -50%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-18deg);
+  transition: left 0.6s ease;
+}
+.cta-utama:hover::after {
+  left: 120%;
+}
+
+/* Vignette layar permainan */
+.vinyet {
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 58%, rgba(8, 10, 12, 0.32) 100%);
+}
+
+/* Sembunyikan UI loading bawaan A-Frame agar tidak menutupi HUD */
+.a-loader-title {
+  display: none !important;
+}
+
+/* Pembungkus scene A-Frame */
+.bingkai-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+.bingkai-scene a-scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.bingkai-scene canvas,
+.bingkai-scene .a-canvas {
+  display: block;
+  touch-action: none;
+}
+
+/* Animasi daftar */
+.anim-pindar {
+  animation: pindar 1.6s ease-in-out infinite;
+}
