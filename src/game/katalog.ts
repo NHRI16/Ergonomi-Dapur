@@ -163,15 +163,63 @@ class KatalogModel {
     this.emit();
   }
 
-  /** Pasang berkas .glb/.gltf dari komputer pengguna. */
-  pasangBerkas(id: string, berkas: File) {
-    const lama = this.urlSementara.get(id);
-    if (lama) URL.revokeObjectURL(lama);
-    const url = URL.createObjectURL(berkas);
-    this.urlSementara.set(id, url);
-    this.perbarui(id, { jalur: url });
-    return url;
+  /** Pasang berkas .glb/.gltf dari komputer pengguna.
+   *  Di dev-server: upload ke /api/upload-model → pakai path permanen.
+   *  Di produksi (tidak ada endpoint): fallback ke blob URL sementara.
+   */
+  async pasangBerkas(id: string, berkas: File): Promise<{ ok: boolean; jalur: string; namaFile: string; pesan: string }> {
+    const namaFile = berkas.name;
+
+    // Coba upload ke dev-server
+    try {
+      const form = new FormData();
+      form.append("file", berkas, namaFile);
+
+      const resp = await fetch("/api/upload-model", {
+        method: "POST",
+        body: form,
+      });
+
+      if (resp.ok) {
+        const json = (await resp.json()) as { ok: boolean; path: string; filename: string };
+        if (json.ok && json.path) {
+          // Cabut blob URL lama jika ada
+          const lama = this.urlSementara.get(id);
+          if (lama) {
+            URL.revokeObjectURL(lama);
+            this.urlSementara.delete(id);
+          }
+          this.perbarui(id, { jalur: json.path });
+          return {
+            ok: true,
+            jalur: json.path,
+            namaFile: json.filename,
+            pesan: `Model berhasil disimpan ke public/models/${json.filename}`,
+          };
+        }
+        const err = (await resp.json().catch(() => ({ error: "Unknown error" }))) as { error?: string };
+        throw new Error(err.error ?? "Server error");
+      } else {
+        const errJson = (await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }))) as { error?: string };
+        throw new Error(errJson.error ?? `HTTP ${resp.status}`);
+      }
+    } catch (err) {
+      // Fallback: blob URL sementara (hanya muncul di build / jika server tidak jalan)
+      console.warn("[katalog] Upload ke server gagal, menggunakan blob URL sementara:", err);
+      const lama = this.urlSementara.get(id);
+      if (lama) URL.revokeObjectURL(lama);
+      const url = URL.createObjectURL(berkas);
+      this.urlSementara.set(id, url);
+      this.perbarui(id, { jalur: url });
+      return {
+        ok: false,
+        jalur: url,
+        namaFile,
+        pesan: `Gagal menyimpan permanen: ${String(err)}. Model ditampilkan sementara.`,
+      };
+    }
   }
+
 
   kosongkan(id: string) {
     const lama = this.urlSementara.get(id);

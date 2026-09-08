@@ -1,16 +1,19 @@
-// ============================================================
+﻿// ============================================================
 // ErgoDapur — Manajer Model 3D (integrasi Sketchfab)
 // Memasang berkas .glb/.gltf ke slot objek dapur secara langsung.
+// Upload otomatis ke public/models/ agar permanen & bisa di-git push.
 // ============================================================
 
 import { useSyncExternalStore, useRef, useState } from "react";
 import {
   Box,
   Boxes,
+  CheckCircle2,
   ExternalLink,
   FolderOpen,
   Info,
   Link2,
+  Loader2,
   RotateCcw,
   RotateCw,
   Trash2,
@@ -27,16 +30,32 @@ function gunakanKatalog(): SlotModel[] {
 function BarisSlot({ s }: { s: SlotModel }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const terpasang = !!s.jalur;
 
-  const pasangBerkas = (f?: File | null) => {
+  const pasangBerkas = async (f?: File | null) => {
     if (!f) return;
     if (!/\.(glb|gltf)$/i.test(f.name)) {
       toko.toast("Format tidak didukung. Gunakan berkas .glb atau .gltf.", "buruk");
       return;
     }
-    katalog.pasangBerkas(s.id, f);
+
+    setIsUploading(true);
     audio.klik();
+
+    try {
+      const hasil = await katalog.pasangBerkas(s.id, f);
+      if (hasil.ok) {
+        toko.toast(hasil.pesan, "baik");
+      } else {
+        toko.toast(hasil.pesan, "buruk");
+      }
+    } catch (err) {
+      toko.toast(`Gagal memuat model: ${String(err)}`, "buruk");
+    } finally {
+      setIsUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
   };
 
   return (
@@ -61,10 +80,20 @@ function BarisSlot({ s }: { s: SlotModel }) {
             )}
           </div>
           <p className="mt-0.5 text-[10px] leading-snug text-krem-100/55">{s.keterangan}</p>
+          {terpasang && !s.jalur.startsWith("blob:") && (
+            <p className="mt-1 flex items-center gap-1 text-[9px] text-emerald-300/70">
+              <CheckCircle2 size={9} />
+              <span className="truncate font-mono">{s.jalur}</span>
+            </p>
+          )}
+          {terpasang && s.jalur.startsWith("blob:") && (
+            <p className="mt-1 text-[9px] text-amber-300/70">
+              ⚠ Sementara — refresh akan menghilangkan model
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Pilih berkas / URL */}
       <div className="mt-2.5 flex flex-wrap gap-1.5">
         <input
           ref={inputRef}
@@ -75,11 +104,20 @@ function BarisSlot({ s }: { s: SlotModel }) {
         />
         <button
           onClick={() => inputRef.current?.click()}
-          className="flex items-center gap-1.5 rounded-lg border border-white/12 bg-white/[0.06] px-2.5 py-1.5 text-[10.5px] font-semibold text-krem-100/85 transition hover:border-amber-400/45 hover:bg-amber-400/10 hover:text-amber-200"
+          disabled={isUploading}
+          className="flex items-center gap-1.5 rounded-lg border border-white/12 bg-white/[0.06] px-2.5 py-1.5 text-[10.5px] font-semibold text-krem-100/85 transition hover:border-amber-400/45 hover:bg-amber-400/10 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <FolderOpen size={12} /> Pilih berkas .glb
+          {isUploading ? (
+            <>
+              <Loader2 size={12} className="animate-spin" /> Menyimpan…
+            </>
+          ) : (
+            <>
+              <FolderOpen size={12} /> Pilih berkas .glb
+            </>
+          )}
         </button>
-        {terpasang && (
+        {terpasang && !isUploading && (
           <button
             onClick={() => {
               katalog.kosongkan(s.id);
@@ -114,7 +152,6 @@ function BarisSlot({ s }: { s: SlotModel }) {
         </button>
       </div>
 
-      {/* Penyesuaian transformasi */}
       {terpasang && (
         <div className="mt-2.5 grid grid-cols-3 gap-2 border-t border-white/[0.07] pt-2.5">
           <label className="block">
@@ -123,7 +160,9 @@ function BarisSlot({ s }: { s: SlotModel }) {
               type="number"
               step="0.01"
               value={s.skala}
-              onChange={(e) => katalog.perbarui(s.id, { skala: parseFloat(e.target.value) || 0.01 })}
+              onChange={(e) =>
+                katalog.perbarui(s.id, { skala: parseFloat(e.target.value) || 0.01 })
+              }
               className="mt-0.5 w-full rounded-md border border-white/10 bg-arang-950/50 px-1.5 py-1 text-[10.5px] tabular-nums text-krem-100/90 outline-none focus:border-amber-400/40"
             />
           </label>
@@ -133,7 +172,9 @@ function BarisSlot({ s }: { s: SlotModel }) {
               type="number"
               step="0.05"
               value={s.offsetY}
-              onChange={(e) => katalog.perbarui(s.id, { offsetY: parseFloat(e.target.value) || 0 })}
+              onChange={(e) =>
+                katalog.perbarui(s.id, { offsetY: parseFloat(e.target.value) || 0 })
+              }
               className="mt-0.5 w-full rounded-md border border-white/10 bg-arang-950/50 px-1.5 py-1 text-[10.5px] tabular-nums text-krem-100/90 outline-none focus:border-amber-400/40"
             />
           </label>
@@ -178,7 +219,11 @@ export default function ManajerModel() {
           <div className="min-w-0">
             <h2 className="teks-display text-lg font-extrabold text-krem-50">Manajer Model 3D</h2>
             <p className="text-[11.5px] text-krem-100/60">
-              Pasang model GLB/glTF dari Sketchfab ke objek dapur — langsung tampil tanpa membangun ulang.
+              Pasang model GLB/glTF dari Sketchfab ke objek dapur — otomatis disimpan ke{" "}
+              <code className="rounded bg-arang-950/70 px-1 py-px text-[10px] text-amber-200">
+                public/models/
+              </code>
+              .
             </p>
           </div>
           <button
@@ -189,17 +234,24 @@ export default function ManajerModel() {
           </button>
         </div>
 
-        {/* Panduan singkat */}
         <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-sky-400/25 bg-sky-400/[0.07] p-3.5">
           <Info size={15} className="mt-0.5 shrink-0 text-sky-300" />
           <div className="text-[10.5px] leading-relaxed text-krem-100/78">
-            <span className="font-bold text-sky-200">Cara pakai:</span> unduh model dari Sketchfab dalam format{" "}
+            <span className="font-bold text-sky-200">Cara pakai:</span> unduh model dari Sketchfab
+            dalam format{" "}
             <span className="font-semibold text-krem-50">glTF / GLB</span> (tombol{" "}
-            <em>Download 3D Model</em>), lalu klik <span className="font-semibold text-krem-50">Pilih berkas .glb</span>{" "}
-            di bawah. Untuk permanen, salin berkas ke folder{" "}
-            <code className="rounded bg-arang-950/70 px-1 py-px text-[10px] text-amber-200">public/models/</code> lalu
-            isi jalur{" "}
-            <code className="rounded bg-arang-950/70 px-1 py-px text-[10px] text-amber-200">/models/nama.glb</code>.
+            <em>Download 3D Model</em>), lalu klik{" "}
+            <span className="font-semibold text-krem-50">Pilih berkas .glb</span> di bawah. File
+            akan{" "}
+            <span className="font-semibold text-emerald-300">otomatis disimpan</span> ke{" "}
+            <code className="rounded bg-arang-950/70 px-1 py-px text-[10px] text-amber-200">
+              public/models/
+            </code>{" "}
+            — permanen dan bisa di-
+            <code className="rounded bg-arang-950/70 px-1 py-px text-[10px] text-amber-200">
+              git push
+            </code>
+            .
             <a
               href="https://sketchfab.com/search?features=downloadable&type=models&q=kitchen"
               target="_blank"
