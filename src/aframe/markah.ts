@@ -167,7 +167,7 @@ export function bangunMarkahDapur(): string {
   <a-entity geometry="primitive: sphere; radius: 0.042" position="0.33 0.96 -1.94" material="color: #9db45c; roughness: 0.45"></a-entity>
 
   <!-- ================= KOMPOR (INTERAKTIF) ================= -->
-  <a-entity id="kompor" class="interaktif" slot-model="slot: kompor" position="-1.3 0 -1.95">
+  <a-entity id="kompor" class="interaktif"slot-model="slot: kompor" position="-1.3 0 -1.95">
     <a-entity geometry="primitive: box; width: 0.62; height: 0.045; depth: 0.52" position="0 0.895 0"
       material="color: #14161a; roughness: 0.18; metalness: 0.65" ${BAYANGAN}></a-entity>
     <a-entity geometry="primitive: torus; radius: 0.068; radiusTubular: 0.009" rotation="-90 0 0" position="-0.13 0.92 -0.11" material="color: #2a2d31; metalness: 0.7; roughness: 0.4"></a-entity>
