@@ -52,7 +52,9 @@ export interface ParameterDapur {
   panciPosisi: PosisiPanci; // tengah (aman) atau tepi (rawan tersenggol)
   komporJarak: number; // cm dari dinding (5..40) → menentukan koordinat Z
   komporX: number; // koordinat X kompor (meter)
+  komporTinggi: number; // cm dari lantai saat Mode Tata Letak
   kulkasZ: number; // koordinat Z kulkas (meter)
+  kulkasTinggi: number; // cm dari lantai saat Mode Tata Letak
   mejaX: number; // koordinat X pulau meja (meter)
   mejaZ: number; // koordinat Z pulau meja (meter)
   rotKompor: number; // rotasi Y (derajat)
@@ -60,9 +62,11 @@ export interface ParameterDapur {
   rotMeja: number;
   dekor1X: number; // model tambahan 1
   dekor1Z: number;
+  dekor1Tinggi: number;
   dekor1Rot: number;
   dekor2X: number; // model tambahan 2
   dekor2Z: number;
+  dekor2Tinggi: number;
   dekor2Rot: number;
   mejaTinggi: number; // cm (60..100)
   rakTinggi: number; // cm dari lantai (60..190)
@@ -117,7 +121,7 @@ export interface StatusPermainan {
   dipegang: string | null;
   /** Panel manajer model 3D terbuka. */
   modelBuka: boolean;
-  /** Mode interaksi fokus objek (toggle F). */
+  /** Mode interaksi fokus objek (klik objek). */
   modeInteraksi: boolean;
   /** Objek yang sedang diinteraksikan dalam mode interaksi. */
   objekInteraksiAktif: string | null;
@@ -171,7 +175,9 @@ export const PARAM_AWAL: ParameterDapur = {
   panciPosisi: "tengah",
   komporJarak: 10,
   komporX: -1.3,
+  komporTinggi: 0,
   kulkasZ: -1.86,
+  kulkasTinggi: 0,
   mejaX: -0.45,
   mejaZ: -0.55,
   rotKompor: 0,
@@ -179,9 +185,11 @@ export const PARAM_AWAL: ParameterDapur = {
   rotMeja: 0,
   dekor1X: -1.9,
   dekor1Z: 1.5,
+  dekor1Tinggi: 0,
   dekor1Rot: 0,
   dekor2X: 1.7,
   dekor2Z: 1.5,
+  dekor2Tinggi: 0,
   dekor2Rot: 0,
   mejaTinggi: 78,
   rakTinggi: 175,
@@ -740,7 +748,8 @@ export function teksPrompt(
       return {
         nama: "Kompor & Panci",
         aksi: [
-          { kunci: "F", label: "Toggle Interaksi (api, posisi panci & jarak)" },
+          { kunci: "Klik", label: "Ambil / letakkan kompor" },
+          { kunci: "Q E · R T", label: "Putar · tinggi/rendah saat dipegang" },
           { kunci: "[ ]", label: `Jarak dinding (${Math.round(p.komporJarak)} cm)` },
         ],
       };
@@ -748,7 +757,8 @@ export function teksPrompt(
       return {
         nama: "Meja Potong",
         aksi: [
-          { kunci: "F", label: "Toggle Interaksi (tinggi meja, bahan & sensor lux)" },
+          { kunci: "Klik", label: "Ambil / letakkan meja" },
+          { kunci: "Q E · R T", label: "Putar · tinggi/rendah saat dipegang" },
           { kunci: "[ ]", label: `Atur tinggi (${Math.round(p.mejaTinggi)} cm)` },
         ],
       };
@@ -756,19 +766,19 @@ export function teksPrompt(
       return {
         nama: "Talenan & Bahan",
         aksi: [
-          { kunci: "F", label: "Toggle Interaksi (persiapan bahan & potong)" },
+          { kunci: "Klik", label: "Buka opsi persiapan bahan & potong" },
         ],
       };
     case "stasiun-ukur":
       return {
         nama: "Stasiun Pengukur Tubuh",
-        aksi: [{ kunci: "F", label: p.sudahKalibrasi ? "Toggle Interaksi (hasil antropometri)" : "Toggle Interaksi (ukur dimensi tubuh)" }],
+        aksi: [{ kunci: "Klik", label: p.sudahKalibrasi ? "Buka hasil antropometri" : "Buka opsi ukur dimensi tubuh" }],
       };
     case "rak-bumbu":
       return {
         nama: "Rak Bumbu",
         aksi: [
-          { kunci: "F", label: "Toggle Interaksi (tinggi zona emas & jangkauan)" },
+          { kunci: "Klik", label: "Buka opsi tinggi & jangkauan" },
           { kunci: "[ ]", label: `Tinggi (${Math.round(p.rakTinggi)} cm)` },
           { kunci: "G", label: `Geser mendatar (${jarakRakKompor(p).toFixed(2)} m)` },
         ],
@@ -777,7 +787,8 @@ export function teksPrompt(
       return {
         nama: "Kulkas",
         aksi: [
-          { kunci: "F", label: "Toggle Interaksi (buka pintu, bahan & jalur)" },
+          { kunci: "Klik", label: "Ambil / letakkan kulkas" },
+          { kunci: "Q E · R T", label: "Putar · tinggi/rendah saat dipegang" },
           { kunci: "[ ]", label: `Geser posisi (jalur ${(lebarLorong(p) * 100).toFixed(0)} cm)` },
         ],
       };
@@ -785,7 +796,7 @@ export function teksPrompt(
       return {
         nama: "Lampu Gantung Meja",
         aksi: [
-          { kunci: "F", label: "Toggle Interaksi (arah sorot & intensitas)" },
+          { kunci: "Klik", label: "Buka opsi arah sorot & intensitas" },
           { kunci: "[ ]", label: p.lampuMejaFokus ? "Ubah ke cahaya sebar" : "Fokuskan ke meja" },
         ],
       };
@@ -793,36 +804,36 @@ export function teksPrompt(
       return {
         nama: "Saklar Lampu Utama",
         aksi: [
-          { kunci: "F", label: "Toggle Interaksi (saklar & tingkat cahaya)" },
+          { kunci: "Klik", label: "Buka opsi saklar & tingkat cahaya" },
           { kunci: "[ ]", label: `Intensitas (level ${p.lampuLevel})` },
         ],
       };
     case "ventilasi":
       return {
         nama: "Jendela Ventilasi",
-        aksi: [{ kunci: "F", label: "Toggle Interaksi (atur ventilasi & sirkulasi)" }],
+        aksi: [{ kunci: "Klik", label: "Buka opsi ventilasi & sirkulasi" }],
       };
     case "wastafel":
       return {
         nama: "Wastafel",
-        aksi: [{ kunci: "F", label: "Toggle Interaksi (cuci bahan & keran air)" }],
+        aksi: [{ kunci: "Klik", label: "Buka opsi cuci bahan & keran air" }],
       };
     case "hood":
       return {
         nama: "Hood Penyedot Asap",
-        aksi: [{ kunci: "F", label: "Toggle Interaksi (atur penyedot asap & udara)" }],
+        aksi: [{ kunci: "Klik", label: "Buka opsi penyedot asap & udara" }],
       };
     case "rak-bawah":
       return {
         nama: "Rak Panci Bawah",
         aksi: [
-          { kunci: "F", label: "Toggle Interaksi (rak panci & teknik angkat)" },
+          { kunci: "Klik", label: "Buka opsi rak panci & teknik angkat" },
         ],
       };
     case "papan-skor":
       return {
         nama: "Papan Skor Ergonomi",
-        aksi: [{ kunci: "F", label: "Toggle Interaksi (ringkasan & skor ergonomi)" }],
+        aksi: [{ kunci: "Klik", label: "Buka ringkasan & skor ergonomi" }],
       };
     default:
       return null;

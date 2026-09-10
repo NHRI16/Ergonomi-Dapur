@@ -1,7 +1,7 @@
 // ============================================================
-// ErgoDapur — Panel Interaksi Objek (Toggle Tombol F)
+// ErgoDapur — Panel Interaksi Objek (Klik Objek)
 // Memungkinkan pemain mengatur parameter objek dapur secara realistis,
-// mengevaluasi ergonomi langsung, dan kembali ke kontrol FPS dengan F.
+// mengevaluasi ergonomi langsung, lalu kembali ke kontrol FPS dengan tombol tutup.
 // ============================================================
 
 import {
@@ -50,17 +50,25 @@ export default function PanelInteraksiObjek() {
   const dxRak = jarakRakKompor(p);
 
   const tutup = () => {
-    toko.keluarInteraksi();
     const cv = document.querySelector<HTMLCanvasElement>(".bingkai-scene canvas");
     try {
       cv?.requestPointerLock?.();
     } catch {}
+    // Minta pointer-lock masih dalam gesture klik tombol, sebelum panel
+    // dilepas dari DOM. Kamera langsung bisa digerakkan sesudah panel tertutup.
+    toko.keluarInteraksi();
     audio.beralih();
   };
 
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/65 p-3 sm:p-5 backdrop-blur-md animate-layu-masuk">
-      <div className="kaca relative flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/15 shadow-2xl shadow-black/80 max-h-[92vh]">
+      <div
+        className="kaca relative flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/15 shadow-2xl shadow-black/80 max-h-[92vh]"
+        onClick={(e) => {
+          const tombol = (e.target as HTMLElement).closest("button");
+          if (tombol && !tombol.dataset.tutupInteraksi) tutup();
+        }}
+      >
         {/* Header Panel */}
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 bg-white/[0.02]">
           <div className="flex items-center gap-3">
@@ -91,11 +99,11 @@ export default function PanelInteraksiObjek() {
                   {target === "papan-skor" && "Evaluasi Lengkap Dapur"}
                 </h2>
                 <span className="rounded-md bg-amber-400/10 border border-amber-400/25 px-1.5 py-0.5 text-[9.5px] font-bold text-amber-300">
-                  TOGGLE F
+                  OPSI INTERAKSI
                 </span>
               </div>
               <p className="text-[11px] text-krem-100/60">
-                Ubah parameter dan perhatikan perubahan skor ergonomi seketika. Tekan F untuk kembali ke kontrol FPS.
+                Ubah parameter dan perhatikan perubahan skor ergonomi seketika.
               </p>
             </div>
           </div>
@@ -117,7 +125,8 @@ export default function PanelInteraksiObjek() {
             <button
               onClick={tutup}
               className="flex h-8 w-8 items-center justify-center rounded-lg text-krem-100/60 transition hover:bg-white/10 hover:text-krem-50"
-              title="Keluar interaksi & kembali ke FPS (F)"
+              data-tutup-interaksi="true"
+              title="Keluar interaksi & kembali ke FPS"
             >
               <X size={17} />
             </button>
@@ -917,18 +926,18 @@ export default function PanelInteraksiObjek() {
           )}
         </div>
 
-        {/* Footer Panel with Toggle Button */}
+        {/* Footer panel */}
         <div className="flex items-center justify-between border-t border-white/10 bg-arang-950/80 px-5 py-3.5">
           <div className="flex items-center gap-2 text-[11px] text-krem-100/65">
-            <span className="keycap text-[10px]">F</span>
-            <span>Tekan F lagi untuk keluar interaksi & kembali ke kontrol FPS</span>
+            <span>Klik tombol tutup untuk kembali ke kontrol FPS</span>
           </div>
 
           <button
             onClick={tutup}
+            data-tutup-interaksi="true"
             className="teks-display flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-terakota-500 px-4 py-2.5 text-xs font-extrabold text-arang-950 shadow-md shadow-amber-500/20 transition hover:brightness-110 active:scale-95"
           >
-            <CheckCircle2 size={14} /> Kembali ke Kontrol FPS (F)
+            <CheckCircle2 size={14} /> Kembali ke Kontrol FPS
           </button>
         </div>
       </div>

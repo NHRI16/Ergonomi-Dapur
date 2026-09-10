@@ -34,7 +34,8 @@ npm run preview  # menguji hasil build
 | `G` | Geser rak bumbu secara mendatar |
 | **`B`** | **Mode Tata Letak** — pindahkan perabot secara bebas |
 | **`K`** | **Manajer Model 3D** — pasang model Sketchfab |
-| `R` | Putar objek yang sedang diangkat (Mode Tata Letak) |
+| `Q` / `E` | Putar objek yang sedang diangkat (Mode Tata Letak) |
+| `R` / `T` | Naikkan / turunkan objek yang sedang diangkat (Mode Tata Letak) |
 | **`Esc`** | **Menu Pengaturan** (sensitivitas, kecepatan, audio, tema) |
 | `H` | Bantuan & panduan bermain |
 | `M` | Bisukan / aktifkan suara |
@@ -53,7 +54,7 @@ layar 3D. Tatap objek selama ±1 detik untuk berinteraksi tanpa pengontrol.
    serta dua slot model tambahan**.
 3. Arahkan pandangan ke lantai — objek mengikuti titik hijau, terkunci ke
    grid 5 cm.
-4. Tekan **`R`** untuk memutar (kelipatan 15°), lalu **`F`** untuk meletakkan.
+4. Arahkan mouse/pandangan untuk memindahkan objek. Tekan **`Q`** / **`E`** untuk memutar (kelipatan 15°), **`R`** untuk menaikkan, atau **`T`** untuk menurunkan, lalu **`F`** untuk meletakkan.
 5. Tekan **`B`** lagi untuk keluar.
 
 Setiap perpindahan **langsung menghitung ulang** segitiga kerja, lebar lorong,

@@ -52,7 +52,7 @@ export const KURIKULUM: Modul[] = [
       {
         id: "s1a",
         teks: "Ukur dimensi tubuh di stasiun pengukur",
-        cara: "Berdiri di depan meteran dinding (sisi kiri ruangan), lalu tekan F.",
+        cara: "Berdiri di depan meteran dinding (sisi kiri ruangan), lalu klik meteran.",
         cek: (k) => k.p.sudahKalibrasi,
       },
       {
@@ -65,13 +65,13 @@ export const KURIKULUM: Modul[] = [
       {
         id: "s1c",
         teks: "Potong bahan dengan postur punggung netral",
-        cara: "Setelah tinggi meja benar, tatap talenan lalu tekan F.",
+        cara: "Setelah tinggi meja benar, klik talenan.",
         cek: (k) => k.p.potongPosturBaik,
       },
       {
         id: "s1d",
         teks: "Angkat panci dari rak bawah dengan jongkok",
-        cara: "Tekan C untuk jongkok, tatap rak panci bawah, lalu tekan F.",
+        cara: "Tekan C untuk jongkok, lalu klik rak panci bawah.",
         cek: (k) => k.p.panciAmbilJongkok,
       },
     ],
@@ -110,7 +110,7 @@ export const KURIKULUM: Modul[] = [
       {
         id: "s2c",
         teks: "Ambil bumbu tanpa menjinjit atau membungkuk",
-        cara: "Setelah rak berada di zona emas, tatap rak bumbu lalu tekan F.",
+        cara: "Setelah rak berada di zona emas, klik rak bumbu.",
         cek: (k) => k.p.bumbuAmbilBaik,
       },
     ],
@@ -162,7 +162,7 @@ export const KURIKULUM: Modul[] = [
       {
         id: "s3d",
         teks: "Buka pintu kulkas tanpa memblokir jalur",
-        cara: "Setelah lorong cukup lebar, tatap kulkas lalu tekan F.",
+        cara: "Setelah lorong cukup lebar, klik kulkas.",
         cek: (k) => k.p.kulkasBukaJalurBebas,
       },
     ],
@@ -187,7 +187,7 @@ export const KURIKULUM: Modul[] = [
       {
         id: "s4a",
         teks: "Nyalakan pencahayaan umum pada intensitas penuh",
-        cara: "Tatap saklar di dinding belakang, tekan F, lalu ] hingga level 3.",
+        cara: "Klik saklar di dinding belakang, lalu ] hingga level 3.",
         ukur: (k) => ({
           nilai: k.p.lampuUmum ? `level ${k.p.lampuLevel}` : "mati",
           target: "level 3",
@@ -197,7 +197,7 @@ export const KURIKULUM: Modul[] = [
       {
         id: "s4b",
         teks: "Fokuskan lampu tugas ke permukaan meja potong",
-        cara: "Tatap lampu gantung, tekan F untuk menyalakan lalu [ untuk memfokuskan.",
+        cara: "Klik lampu gantung untuk menyalakan lalu [ untuk memfokuskan.",
         ukur: (k) => ({
           nilai: !k.p.lampuMeja ? "mati" : k.p.lampuMejaFokus ? "fokus" : "menyebar",
           target: "fokus",
@@ -240,19 +240,19 @@ export const KURIKULUM: Modul[] = [
       {
         id: "s5b",
         teks: "Cuci bahan di air mengalir sebelum dipotong",
-        cara: "Tatap wastafel, tekan F untuk membuka keran (lakukan sebelum memotong).",
+        cara: "Klik wastafel untuk membuka keran (lakukan sebelum memotong).",
         cek: (k) => k.p.bahanDicuci,
       },
       {
         id: "s5c",
         teks: "Aktifkan sirkulasi SEBELUM menyalakan api",
-        cara: "Nyalakan hood atau buka jendela dulu, baru nyalakan kompor dengan F.",
+        cara: "Nyalakan hood atau buka jendela dulu, lalu gunakan opsi kompor.",
         cek: (k) => k.p.hoodSebelumKompor,
       },
       {
         id: "s5d",
         teks: "Buka jendela untuk ventilasi silang",
-        cara: "Tatap jendela di dinding kanan lalu tekan F.",
+        cara: "Klik jendela di dinding kanan.",
         cek: (k) => k.p.ventilasiBuka,
       },
       {

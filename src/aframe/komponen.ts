@@ -27,6 +27,8 @@ export function pastikanKomponen() {
       this.yaw = 0;
       this.pitch = 0;
       this.terkunci = false;
+      this.mouseBebasX = null;
+      this.mouseBebasY = null;
       this.el.object3D.rotation.order = "YXZ";
       this.kanvas = this.el.sceneEl.canvas;
 
@@ -71,7 +73,19 @@ export function pastikanKomponen() {
           my = e.clientY - this.seretY;
           this.seretX = e.clientX;
           this.seretY = e.clientY;
-        } else return;
+        } else {
+          // Fallback tanpa pointer-lock: begitu panel opsi ditutup, mouse
+          // langsung dapat memutar pandangan tanpa perlu klik lagi.
+          if (this.mouseBebasX === null || this.mouseBebasY === null) {
+            this.mouseBebasX = e.clientX;
+            this.mouseBebasY = e.clientY;
+            return;
+          }
+          mx = e.clientX - this.mouseBebasX;
+          my = e.clientY - this.mouseBebasY;
+          this.mouseBebasX = e.clientX;
+          this.mouseBebasY = e.clientY;
+        }
         const s = toko.keadaan.pengaturan.sensitivitas * 0.0021;
         this.yaw -= mx * s;
         this.pitch -= my * s;

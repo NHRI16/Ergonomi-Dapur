@@ -2,7 +2,7 @@
 // ============================================================
 // ErgoDapur — Pengendali Utama Permainan
 // Menghubungkan store (logika ergonomi) dengan scene A-Frame:
-// animasi halus semua objek, aksi tombol F / [ ] / Esc,
+// animasi halus semua objek, aksi klik / Q/E/R/T / Esc,
 // penerapan pengaturan grafis, dan mode siang/malam.
 // ============================================================
 
@@ -14,12 +14,23 @@ const REDAM = (nilai: number, target: number, laju: number, dt: number) =>
 
 /** Objek yang dapat dipindahkan bebas pada Mode Tata Letak. */
 export const OBJEK_TATA = ["kompor", "kulkas", "meja-atas", "dekor-1", "dekor-2"];
+/** Peralatan tetap yang membuka opsi interaksi saat diklik. */
+const OBJEK_AKSI_LANGSUNG = new Set([
+  "stasiun-ukur", "rak-bumbu", "saklar-lampu", "lampu-meja", "wastafel",
+  "hood", "talenan", "ventilasi", "rak-bawah", "papan-skor",
+]);
 const NAMA_TATA: Record<string, string> = {
   kompor: "Kompor",
   kulkas: "Kulkas",
   "meja-atas": "Pulau meja potong",
   "dekor-1": "Model tambahan 1",
   "dekor-2": "Model tambahan 2",
+};
+
+/** Hitbox anak meja tetap memilih seluruh meja saat Mode Tata Letak. */
+const objekTataDariTarget = (id: string | null) => {
+  if (id === "meja-potong" || id === "talenan") return "meja-atas";
+  return id;
 };
 
 const v3 = (a: number, b: number, c: number) => `${(+a.toFixed(3))} ${(+b.toFixed(3))} ${(+c.toFixed(3))}`;
@@ -94,6 +105,7 @@ export class PengendaliDapur {
       panciMesh: q("panci-mesh"),
       uap: q("uap"),
       mejaAtas: q("meja-atas"),
+      mejaRangka: q("meja-rangka"),
       mejaKakiKiri: q("meja-kaki-kiri"),
       mejaKakiKanan: q("meja-kaki-kanan"),
       rakBumbu: q("rak-bumbu"),
@@ -132,12 +144,16 @@ export class PengendaliDapur {
       dekor2: q("dekor-2"),
       grid: q("grid-tata"),
       hantu: q("hantu-tata"),
+      hantuBentuk: q("hantu-bentuk"),
       pemain: q("pemain"),
     };
     this.putaranKipas = 0;
     this.THREE = (window as any).AFRAME.THREE;
     this.vekArah = new this.THREE.Vector3();
     this.vekPos = new this.THREE.Vector3();
+    this.vekHit = new this.THREE.Vector3();
+    this.rayTata = new this.THREE.Ray();
+    this.bidangTata = new this.THREE.Plane(new this.THREE.Vector3(0, 1, 0), 0);
 
     this.batalLangganan = toko.langganan(() => {
       const k = toko.keadaan;
@@ -146,6 +162,9 @@ export class PengendaliDapur {
     });
 
     window.addEventListener("keydown", this.padaTombol);
+    // Tangkap F sebelum event mencapai A-Frame, React, atau listener lama.
+    // Efeknya identik tombol yang tidak dipakai seperti Y pada proyek ini.
+    window.addEventListener("keydown", this.blokirTombolF, true);
     scene.addEventListener("click", this.padaKlik);
 
     scene.addEventListener("enter-vr", () => {
@@ -164,10 +183,18 @@ export class PengendaliDapur {
 
   hancur() {
     window.removeEventListener("keydown", this.padaTombol);
+    window.removeEventListener("keydown", this.blokirTombolF, true);
+    this.scene?.removeEventListener("click", this.padaKlik);
     this.batalLangganan?.();
   }
 
   // ---------------- Papan ketik ----------------
+  private blokirTombolF = (e: KeyboardEvent) => {
+    if (e.code !== "KeyF") return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  };
+
   private padaTombol = (e: KeyboardEvent) => {
     // Abaikan hanya saat pengguna sedang mengetik di kolom teks
     const t = e.target as HTMLElement | null;
@@ -181,34 +208,9 @@ export class PengendaliDapur {
 
     const st = toko.keadaan.status;
 
-    // Esc hanya dipakai untuk membuka/menutup menu setting
+    // Esc hanya melepas kursor dari permainan; pilihan barang tetap dipertahankan.
     if (e.code === "Escape") {
-      if (st.dalamVR || !st.dimulai) return;
-      if (st.modelBuka) {
-        toko.setStatus({ modelBuka: false });
-        if (!st.modeInteraksi) {
-          const cv = this.scene?.canvas;
-          try { cv?.requestPointerLock?.(); } catch {}
-        }
-        return;
-      }
-      if (st.bantuanBuka) {
-        toko.setStatus({ bantuanBuka: false });
-        if (!st.modeInteraksi) {
-          const cv = this.scene?.canvas;
-          try { cv?.requestPointerLock?.(); } catch {}
-        }
-        return;
-      }
-      // Buka / tutup menu setting (tidak menutup modeInteraksi)
-      const buka = !st.menuBuka;
-      toko.setStatus({ menuBuka: buka });
-      if (buka) {
-        document.exitPointerLock?.();
-      } else if (!st.modeInteraksi) {
-        const cv = this.scene?.canvas;
-        try { cv?.requestPointerLock?.(); } catch {}
-      }
+      if (!st.dalamVR) document.exitPointerLock?.();
       return;
     }
 
@@ -234,63 +236,25 @@ export class PengendaliDapur {
 
     if (st.menuBuka || st.bantuanBuka || st.modelBuka) return;
 
-    // Toggle interaksi objek dengan tombol F
-    if (e.code === "KeyF") {
-      if (st.modeInteraksi) {
-        // Tekan F lagi -> keluar interaksi, kembali ke kontrol FPS
-        toko.keluarInteraksi();
-        const cv = this.scene?.canvas;
-        try { cv?.requestPointerLock?.(); } catch {}
-        audio.beralih();
-        return;
-      }
-      if (st.modeTata) {
-        this.aksiUtama();
-        return;
-      }
-      if (st.target) {
-        // Tekan F sekali -> aktifkan interaksi objek
-        toko.masukInteraksi(st.target);
-        document.exitPointerLock?.();
-        audio.klik();
-        return;
-      } else {
-        toko.toast("Arahkan pandangan ke objek dapur lalu tekan F untuk berinteraksi.", "info");
-        return;
-      }
-    }
-
+    if (e.code === "KeyQ" && !e.repeat) this.putarObjek(-1);
+    if (e.code === "KeyE" && !e.repeat) this.putarObjek(1);
+    if (e.code === "KeyR" && !e.repeat) this.ubahTinggiObjek(1);
+    if (e.code === "KeyT" && !e.repeat) this.ubahTinggiObjek(-1);
     if (e.code === "BracketLeft" || e.code === "Minus") this.penyesuaian(-1);
     if (e.code === "BracketRight" || e.code === "Equal") this.penyesuaian(1);
     if (e.code === "KeyG") this.geserHorizontal();
-    if (e.code === "KeyB" && !e.repeat) this.beralihModeTata();
     if (e.code === "KeyK" && !e.repeat) {
       toko.setStatus({ modelBuka: !st.modelBuka });
       if (!st.modelBuka) document.exitPointerLock?.();
     }
-    if (e.code === "KeyR" && !e.repeat) this.putarObjek();
   };
 
-  /** Aktif/nonaktifkan Mode Tata Letak (build mode). */
-  private beralihModeTata() {
-    const st = toko.keadaan.status;
-    const aktif = !st.modeTata;
-    toko.setStatus({ modeTata: aktif, dipegang: null });
-    audio.beralih();
-    toko.toast(
-      aktif
-        ? "Mode Tata Letak AKTIF — tatap objek lalu tekan F untuk mengangkat, F lagi untuk meletakkan."
-        : "Mode Tata Letak nonaktif — kembali ke mode interaksi.",
-      "info"
-    );
-  }
-
   /** Putar objek yang sedang dipegang (kelipatan 15°). */
-  private putarObjek() {
+  private putarObjek(arah: 1 | -1) {
     const st = toko.keadaan.status;
     if (!st.modeTata || !st.dipegang) return;
     const p = toko.keadaan.params;
-    const tambah = (v: number) => (v + 15) % 360;
+    const tambah = (v: number) => (v + arah * 15 + 360) % 360;
     switch (st.dipegang) {
       case "kompor":
         toko.setParams({ rotKompor: tambah(p.rotKompor) }, true);
@@ -311,40 +275,80 @@ export class PengendaliDapur {
     audio.geser();
   }
 
-  private padaKlik = (e: any) => {
-    const el = e.target?.closest?.(".interaktif");
-    if (!el || !el.id) return;
-    toko.setStatus({ target: el.id });
+  /** Naikkan/turunkan objek yang dipegang (R/T, kelipatan 5 cm). */
+  private ubahTinggiObjek(arah: 1 | -1) {
     const st = toko.keadaan.status;
-    if (st.modeTata) {
-      this.aksiUtama(el.id);
-    } else if (!st.modeInteraksi && !st.menuBuka && !st.bantuanBuka && !st.modelBuka) {
-      toko.masukInteraksi(el.id);
+    if (!st.modeTata || !st.dipegang) return;
+    const p = toko.keadaan.params;
+    const batas = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+    const tinggi = (v: number, maks = 150) => batas(v + arah * 5, 0, maks);
+    switch (st.dipegang) {
+      case "kompor": toko.setParams({ komporTinggi: tinggi(p.komporTinggi) }, true); break;
+      case "kulkas": toko.setParams({ kulkasTinggi: tinggi(p.kulkasTinggi) }, true); break;
+      case "meja-atas": toko.setParams({ mejaTinggi: batas(p.mejaTinggi + arah * 5, 60, 100) }, true); break;
+      case "dekor-1": toko.setParams({ dekor1Tinggi: tinggi(p.dekor1Tinggi, 220) }, true); break;
+      case "dekor-2": toko.setParams({ dekor2Tinggi: tinggi(p.dekor2Tinggi, 220) }, true); break;
+    }
+    audio.geser();
+  }
+
+  private padaKlik = (e: any) => {
+    const st = toko.keadaan.status;
+    // Klik kedua bisa di mana saja pada scene: letakkan barang di titik hijau.
+    if (st.dipegang) {
+      toko.setStatus({ modeTata: false, dipegang: null });
+      audio.klik();
+      toko.toast("Objek diletakkan.", "baik");
+      return;
+    }
+
+    // Saat pointer-lock aktif, target DOM click biasanya adalah <canvas>,
+    // bukan entitas A-Frame yang diklik. Gunakan hasil raycast crosshair
+    // yang selalu disimpan oleh manajer-interaksi.
+    const targetId = e.target?.closest?.(".interaktif")?.id || st.target;
+    if (!targetId) return;
+    const id = objekTataDariTarget(targetId);
+    toko.setStatus({ target: targetId });
+
+    // Klik pertama pada barang yang dapat dipindah = ambil barang.
+    if (id && OBJEK_TATA.includes(id)) {
+      toko.setStatus({ modeTata: true, dipegang: id, target: id, modeInteraksi: false, objekInteraksiAktif: null });
+      const cv = this.scene?.canvas;
+      try { cv?.requestPointerLock?.(); } catch {}
+      audio.geser();
+      toko.toast(`${NAMA_TATA[id]} diambil — gerakkan dengan mouse, klik untuk meletakkan.`, "info");
+    } else if (OBJEK_AKSI_LANGSUNG.has(targetId) && !st.modeInteraksi && !st.menuBuka && !st.bantuanBuka && !st.modelBuka) {
+      // Benda tetap memakai panel opsinya; tidak diperlakukan sebagai barang
+      // yang dapat dipindahkan.
+      toko.masukInteraksi(targetId);
       document.exitPointerLock?.();
       audio.klik();
     }
   };
 
-  // ---------------- Aksi utama (F) ----------------
+  // ---------------- Aksi utama (klik/VR) ----------------
   aksiUtama(idPaksa?: string) {
     const k = toko.keadaan;
     const id = idPaksa || k.status.target;
 
-    // --- Mode Tata Letak: F = angkat / letakkan objek ---
+    // --- Mode Tata Letak: dipakai oleh klik / VR ---
     if (k.status.modeTata) {
       if (k.status.dipegang) {
         toko.setStatus({ dipegang: null });
         audio.klik();
         toko.toast("Objek diletakkan. Skor ergonomi diperbarui sesuai posisi baru.", "baik");
-      } else if (id && OBJEK_TATA.includes(id)) {
-        toko.setStatus({ dipegang: id });
-        audio.geser();
-        toko.toast(
-          `${NAMA_TATA[id]} diangkat — arahkan pandangan ke lantai untuk memindahkan, R untuk memutar, F untuk meletakkan.`,
-          "info"
-        );
       } else {
-        toko.toast("Objek ini tidak dapat dipindahkan. Coba kompor, kulkas, pulau meja, atau slot dekorasi.", "cukup");
+        const objekTata = objekTataDariTarget(id);
+        if (objekTata && OBJEK_TATA.includes(objekTata)) {
+          toko.setStatus({ dipegang: objekTata, target: objekTata });
+          audio.geser();
+          toko.toast(
+            `${NAMA_TATA[objekTata]} diambil — gerakkan dengan mouse, Q/E putar, R/T tinggi-rendah, lalu klik untuk meletakkan.`,
+            "info"
+          );
+        } else {
+          toko.toast("Objek ini tidak dapat dipindahkan. Coba kompor, kulkas, pulau meja, atau slot dekorasi.", "cukup");
+        }
       }
       return;
     }
@@ -566,7 +570,7 @@ export class PengendaliDapur {
         break;
       case "saklar-lampu": {
         if (!p.lampuUmum) {
-          toko.toast("Nyalakan dulu lampu utama (F) untuk mengatur intensitas.", "info");
+          toko.toast("Nyalakan dulu lampu utama lewat opsi interaksi untuk mengatur intensitas.", "info");
           break;
         }
         const levelBaru = batas(p.lampuLevel + arah, 1, 3);
@@ -600,24 +604,44 @@ export class PengendaliDapur {
   private prosesModeTata(k: any, _dt: number) {
     const st = k.status;
     const el = this.el;
-    const aktif = st.modeTata && st.dimulai;
+    // Indikator hijau adalah pratinjau lokasi barang yang sedang dibawa.
+    // Jangan tampilkan ketika pemain belum memilih barang dengan klik.
+    const memindahkan = st.modeTata && st.dimulai && !!st.dipegang;
 
-    el.grid?.setAttribute("visible", aktif);
-    if (!aktif || !st.dipegang || !el.pemain) {
+    el.grid?.setAttribute("visible", memindahkan);
+    if (!memindahkan || !el.pemain) {
       el.hantu?.setAttribute("visible", false);
       return;
     }
 
-    // Titik potong arah pandang dengan bidang lantai (y = 0)
-    const cam = el.pemain.object3D;
+    // Sama seperti controller Projek-2-Enuma: gunakan ray kamera yang benar-benar
+    // memotong bidang penempatan, bukan jarak tebakan dari arah pandang.
+    // Pitch dari mouse berada pada kamera A-Frame, bukan entitas pemain.
+    const cam = el.pemain.getObject3D("camera") || el.pemain.object3D;
     cam.getWorldPosition(this.vekPos);
     cam.getWorldDirection(this.vekArah);
-    this.vekArah.multiplyScalar(-1); // getWorldDirection menghadap -Z
-    let jarakTitik = 2.0;
-    if (this.vekArah.y < -0.08) jarakTitik = -this.vekPos.y / this.vekArah.y;
-    jarakTitik = Math.max(0.7, Math.min(3.4, jarakTitik));
-    let x = this.vekPos.x + this.vekArah.x * jarakTitik;
-    let z = this.vekPos.z + this.vekArah.z * jarakTitik;
+    const p = k.params;
+    const bidangY =
+      st.dipegang === "kompor" ? p.komporTinggi / 100 :
+      st.dipegang === "kulkas" ? p.kulkasTinggi / 100 :
+      st.dipegang === "dekor-1" ? p.dekor1Tinggi / 100 :
+      st.dipegang === "dekor-2" ? p.dekor2Tinggi / 100 : 0;
+    this.bidangTata.constant = -bidangY;
+    let titik = this.rayTata.set(this.vekPos, this.vekArah).intersectPlane(this.bidangTata, this.vekHit);
+    // Saat pandangan sejajar lantai, ray tidak pernah memotong bidang. Dalam
+    // kondisi itu, letakkan titik pegangan 1,8 m di depan pemain agar mouse
+    // tetap langsung memindahkan objek seperti controller Projek-2-Enuma.
+    if (!titik) {
+      const panjangMendatar = Math.hypot(this.vekArah.x, this.vekArah.z) || 1;
+      this.vekHit.set(
+        this.vekPos.x + (this.vekArah.x / panjangMendatar) * 1.8,
+        bidangY,
+        this.vekPos.z + (this.vekArah.z / panjangMendatar) * 1.8
+      );
+      titik = this.vekHit;
+    }
+    let x = titik.x;
+    let z = titik.z;
 
     // Kunci ke grid 5 cm agar penataan rapi
     x = Math.round(x * 20) / 20;
@@ -657,7 +681,6 @@ export class PengendaliDapur {
     }
 
     // Tulis hanya bila benar-benar berubah (hindari render berlebih)
-    const p = k.params;
     const berubah = Object.keys(patch).some((key) => Math.abs((p as any)[key] - patch[key]) > 0.001);
     if (berubah) toko.setParams(patch, true);
 
@@ -670,6 +693,30 @@ export class PengendaliDapur {
           ? -2.05 + patch.komporJarak / 100
           : patch.mejaZ ?? patch.kulkasZ ?? patch.dekor1Z ?? patch.dekor2Z ?? z;
       el.hantu.setAttribute("position", v3(px, 0.02, pz));
+    }
+
+    // Siluet hijau transparan menegaskan benda sedang dibawa, bukan hanya
+    // titik tujuan di lantai.
+    const bentuk = el.hantuBentuk;
+    if (bentuk) {
+      const ukuran: Record<string, [number, number, number, number]> = {
+        kompor: [0.82, 0.78, 0.58, p.komporTinggi / 100],
+        kulkas: [0.78, 1.75, 0.72, p.kulkasTinggi / 100],
+        "meja-atas": [1.28, p.mejaTinggi / 100, 0.7, 0],
+        "dekor-1": [0.58, 0.9, 0.58, p.dekor1Tinggi / 100],
+        "dekor-2": [0.58, 0.9, 0.58, p.dekor2Tinggi / 100],
+      };
+      const [lebar, tinggi, dalam, alas] = ukuran[st.dipegang] || ukuran["dekor-1"];
+      const putar: Record<string, number> = {
+        kompor: p.rotKompor,
+        kulkas: p.rotKulkas,
+        "meja-atas": p.rotMeja,
+        "dekor-1": p.dekor1Rot,
+        "dekor-2": p.dekor2Rot,
+      };
+      bentuk.setAttribute("geometry", `primitive: box; width: ${lebar}; height: ${tinggi}; depth: ${dalam}`);
+      bentuk.setAttribute("position", v3(0, alas + tinggi / 2, 0));
+      bentuk.setAttribute("rotation", v3(0, putar[st.dipegang] || 0, 0));
     }
   }
 
@@ -725,7 +772,7 @@ export class PengendaliDapur {
     // Kompor: posisi X bebas + jarak dari dinding (Z)
     v.komporZ = REDAM(v.komporZ, -2.05 + p.komporJarak / 100, 8, dt);
     v.komporX = REDAM(v.komporX, p.komporX, 8, dt);
-    el.kompor?.setAttribute("position", v3(v.komporX, 0, v.komporZ));
+    el.kompor?.setAttribute("position", v3(v.komporX, p.komporTinggi / 100, v.komporZ));
     el.kompor?.setAttribute("rotation", v3(0, p.rotKompor, 0));
 
     // Posisi panci (tengah aman vs tepi rawan)
@@ -783,24 +830,26 @@ export class PengendaliDapur {
     v.mejaH = REDAM(v.mejaH, p.mejaTinggi / 100, 8, dt);
     v.mejaX = REDAM(v.mejaX, p.mejaX, 8, dt);
     v.mejaZ = REDAM(v.mejaZ, p.mejaZ, 8, dt);
-    el.mejaAtas?.setAttribute("position", v3(v.mejaX, v.mejaH, v.mejaZ));
-    el.mejaAtas?.setAttribute("rotation", v3(0, p.rotMeja, 0));
+    // Semua bagian meja memakai satu rangka, agar kaki/palang ikut saat meja dipindah atau diputar.
+    el.mejaRangka?.setAttribute("position", v3(v.mejaX, 0, v.mejaZ));
+    el.mejaRangka?.setAttribute("rotation", v3(0, p.rotMeja, 0));
+    el.mejaAtas?.setAttribute("position", v3(0, v.mejaH, 0));
     if (el.mejaKakiKiri) {
       el.mejaKakiKiri.setAttribute("scale", v3(1, v.mejaH, 1));
-      el.mejaKakiKiri.setAttribute("position", v3(v.mejaX - 0.56, v.mejaH / 2, v.mejaZ));
+      el.mejaKakiKiri.setAttribute("position", v3(-0.56, v.mejaH / 2, 0));
     }
     if (el.mejaKakiKanan) {
       el.mejaKakiKanan.setAttribute("scale", v3(1, v.mejaH, 1));
-      el.mejaKakiKanan.setAttribute("position", v3(v.mejaX + 0.56, v.mejaH / 2, v.mejaZ));
+      el.mejaKakiKanan.setAttribute("position", v3(0.56, v.mejaH / 2, 0));
     }
-    el.mejaPalang?.setAttribute("position", v3(v.mejaX, 0.12, v.mejaZ));
+    el.mejaPalang?.setAttribute("position", v3(0, 0.12, 0));
     // Lampu gantung mengikuti pulau meja
     el.gantungan?.setAttribute("position", v3(v.mejaX + 0.45, 0, v.mejaZ + 0.55));
 
     // Slot model tambahan (Sketchfab)
-    el.dekor1?.setAttribute("position", v3(p.dekor1X, 0, p.dekor1Z));
+    el.dekor1?.setAttribute("position", v3(p.dekor1X, p.dekor1Tinggi / 100, p.dekor1Z));
     el.dekor1?.setAttribute("rotation", v3(0, p.dekor1Rot, 0));
-    el.dekor2?.setAttribute("position", v3(p.dekor2X, 0, p.dekor2Z));
+    el.dekor2?.setAttribute("position", v3(p.dekor2X, p.dekor2Tinggi / 100, p.dekor2Z));
     el.dekor2?.setAttribute("rotation", v3(0, p.dekor2Rot, 0));
 
     // Rak bumbu: ketinggian + posisi horizontal
@@ -827,7 +876,7 @@ export class PengendaliDapur {
     // Kulkas: geser + posisi Z bebas + pintu
     v.kulkasX = REDAM(v.kulkasX, 1.45 - p.kulkasGeser / 100, 8, dt);
     v.kulkasZ = REDAM(v.kulkasZ, p.kulkasZ, 8, dt);
-    el.kulkas?.setAttribute("position", v3(v.kulkasX, 0, v.kulkasZ));
+    el.kulkas?.setAttribute("position", v3(v.kulkasX, p.kulkasTinggi / 100, v.kulkasZ));
     el.kulkas?.setAttribute("rotation", v3(0, p.rotKulkas, 0));
     v.pintu = REDAM(v.pintu, p.kulkasTerbuka ? -112 : 0, 5.5, dt);
     el.pintuKulkas?.setAttribute("rotation", v3(0, v.pintu, 0));

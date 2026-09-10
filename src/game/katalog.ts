@@ -81,7 +81,7 @@ export const SLOT_BAWAAN: SlotModel[] = [
     jalur: "/models/barrel_stove.glb",
     skala: 1,
     putarY: 0,
-    offsetY: 0.8,
+    offsetY: 0,
     sembunyikanPrimitif: false,
   },
   {

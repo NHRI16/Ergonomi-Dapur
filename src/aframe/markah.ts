@@ -312,10 +312,11 @@ export function bangunMarkahDapur(): string {
     material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
 
   <!-- ================= PULAU MEJA POTONG (INTERAKTIF) ================= -->
-  <a-entity id="meja-kaki-kiri" geometry="primitive: box; width: 0.06; height: 1; depth: 0.56" position="-1.01 0.39 -0.55" material="src: #tx-kayu; color: #8a6a45; roughness: 0.6" ${BAYANGAN}></a-entity>
-  <a-entity id="meja-kaki-kanan" geometry="primitive: box; width: 0.06; height: 1; depth: 0.56" position="0.11 0.39 -0.55" material="src: #tx-kayu; color: #8a6a45; roughness: 0.6" ${BAYANGAN}></a-entity>
-  <a-entity id="meja-palang" geometry="primitive: box; width: 1.06; height: 0.06; depth: 0.05" position="-0.45 0.12 -0.55" material="color: #6e5636; roughness: 0.7"></a-entity>
-  <a-entity id="meja-atas" class="interaktif" slot-model="slot: meja-atas" position="-0.45 0.78 -0.55">
+  <a-entity id="meja-rangka" position="-0.45 0 -0.55">
+  <a-entity id="meja-kaki-kiri" geometry="primitive: box; width: 0.06; height: 1; depth: 0.56" position="-0.56 0.39 0" material="src: #tx-kayu; color: #8a6a45; roughness: 0.6" ${BAYANGAN}></a-entity>
+  <a-entity id="meja-kaki-kanan" geometry="primitive: box; width: 0.06; height: 1; depth: 0.56" position="0.56 0.39 0" material="src: #tx-kayu; color: #8a6a45; roughness: 0.6" ${BAYANGAN}></a-entity>
+  <a-entity id="meja-palang" geometry="primitive: box; width: 1.06; height: 0.06; depth: 0.05" position="0 0.12 0" material="color: #6e5636; roughness: 0.7"></a-entity>
+  <a-entity id="meja-atas" class="interaktif" slot-model="slot: meja-atas" position="0 0.78 0">
     <a-entity id="meja-potong" class="interaktif" geometry="primitive: box; width: 1.28; height: 0.5; depth: 0.7" position="0 -0.2 0"
       material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
     <a-entity id="meja-permukaan" geometry="primitive: box; width: 1.24; height: 0.06; depth: 0.66" position="0 -0.03 0"
@@ -340,6 +341,7 @@ export function bangunMarkahDapur(): string {
       <a-entity geometry="primitive: box; width: 0.07; height: 0.006; depth: 0.02" position="-0.31 0.024 -0.07" material="color: #7d9b4e; roughness: 0.7"></a-entity>
       <a-entity geometry="primitive: box; width: 0.06; height: 0.006; depth: 0.02" position="-0.22 0.024 -0.09" rotation="0 30 0" material="color: #7d9b4e; roughness: 0.7"></a-entity>
     </a-entity>
+  </a-entity>
   </a-entity>
 
   <!-- ================= LAMPU GANTUNG MEJA (INTERAKTIF) ================= -->
@@ -435,8 +437,10 @@ export function bangunMarkahDapur(): string {
     } return g; })()}
   </a-entity>
 
-  <!-- Bayangan pratinjau penempatan -->
+  <!-- Pratinjau hijau lokasi benda yang sedang dipindahkan -->
   <a-entity id="hantu-tata" visible="false" position="0 0.02 0">
+    <a-entity id="hantu-bentuk" geometry="primitive: box; width: 0.8; height: 0.8; depth: 0.6"
+      position="0 0.4 0" material="color: #34d399; transparent: true; opacity: 0.28; shader: flat; side: double"></a-entity>
     <a-entity geometry="primitive: circle; radius: 0.42" rotation="-90 0 0"
       material="color: #34d399; transparent: true; opacity: 0.22; shader: flat"></a-entity>
     <a-entity geometry="primitive: torus; radius: 0.44; radiusTubular: 0.012" rotation="-90 0 0"

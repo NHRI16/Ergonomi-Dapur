@@ -344,14 +344,15 @@ export default function HUD() {
         {[
           ["W A S D", "bergerak"],
           ["Mouse", "melihat"],
-          ["F", "buka/tutup interaksi"],
+          ["Klik", "ambil / letakkan"],
           ["C", "jongkok"],
           ["Shift", "berdiri tegak"],
           ["[ ]", "atur / geser"],
           ["G", "geser rak mendatar"],
-          ["B", "mode tata letak"],
+          ["Q E", "putar objek"],
+          ["R T", "tinggi / rendah"],
           ["K", "model 3D"],
-          ["Esc", "menu pengaturan"],
+          ["Esc", "lepas kursor"],
         ].map(([kunci, label]) => (
           <span key={kunci} className="flex items-center gap-1.5 text-[9.5px] text-krem-100/60">
             <span className="keycap">{kunci}</span> {label}
@@ -384,22 +385,27 @@ export default function HUD() {
             </span>
             <span className="h-3.5 w-px bg-white/15" />
             <span className="flex items-center gap-1.5 text-[10px] text-krem-100/70">
-              <span className="keycap">F</span>
-              {status.dipegang ? "letakkan" : "angkat objek"}
+              <span className="keycap">Klik</span>
+              {status.dipegang ? "letakkan" : "ambil objek"}
             </span>
             {status.dipegang && (
               <span className="flex items-center gap-1.5 text-[10px] text-krem-100/70">
-                <span className="keycap">R</span> putar
+                <span className="keycap">Q / E</span> putar
+              </span>
+            )}
+            {status.dipegang && (
+              <span className="flex items-center gap-1.5 text-[10px] text-krem-100/70">
+                <span className="keycap">R / T</span> tinggi / rendah
               </span>
             )}
             <span className="flex items-center gap-1.5 text-[10px] text-krem-100/70">
-              <span className="keycap">B</span> keluar
+              <span className="keycap">Esc</span> lepas kursor
             </span>
           </div>
           {status.dipegang && (
             <div className="mt-1.5 text-center text-[10.5px] font-semibold text-emerald-300/90 drop-shadow">
               Memindahkan: {status.dipegang === "meja-atas" ? "Pulau Meja Potong" : status.dipegang.replace("-", " ")}
-              {" — arahkan pandangan ke lantai"}
+              {" — gerakkan mouse ke lokasi tujuan"}
             </div>
           )}
         </div>
@@ -446,7 +452,7 @@ export default function HUD() {
           <div className="kaca flex animate-nadi-lembut cursor-default items-center gap-2.5 rounded-full border-amber-400/30 px-5 py-2.5">
             <span className="titik-hidup" style={{ background: "#f59e0b", color: "#f59e0b" }} />
             <span className="teks-display text-[12px] font-bold text-krem-100/90">
-              Klik untuk kunci kursor FPS — tekan F saat melihat objek untuk toggle interaksi
+              Klik untuk mengunci kursor FPS — klik objek untuk berinteraksi atau memindahkannya
             </span>
           </div>
         </div>
