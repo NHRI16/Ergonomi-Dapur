@@ -326,6 +326,10 @@ export class PengendaliDapur {
       return;
     }
 
+    // Selama jeda pasca-interaksi, abaikan klik agar pemain tidak perlu
+    // klik dua kali untuk menoleh setelah menutup panel.
+    if (performance.now() < st.jedaInteraksiSampai) return;
+
     // Saat pointer-lock aktif, target DOM click biasanya adalah <canvas>,
     // bukan entitas A-Frame yang diklik. Gunakan hasil raycast crosshair
     // yang selalu disimpan oleh manajer-interaksi.

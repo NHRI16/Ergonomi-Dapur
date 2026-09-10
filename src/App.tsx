@@ -56,11 +56,12 @@ export default function App() {
           />
         </div>
       )}
-      {/* Antarmuka permainan — tombol U menyembunyikan/menampilkannya. */}
+      {/* Panel interaksi objek selalu tampil saat aktif, tidak terpengaruh tombol U. */}
+      <PanelInteraksiObjek />
+      {/* Antarmuka permainan lainnya — tombol U menyembunyikan/menampilkannya. */}
       {!antarmukaTersembunyi && (
         <>
           <HUD />
-          <PanelInteraksiObjek />
           <DebriefModul />
           <ManajerModel />
           <MenuPengaturan />

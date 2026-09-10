@@ -129,6 +129,8 @@ export interface StatusPermainan {
   objekInteraksiAktif: string | null;
   /** Evaluasi langsung terakhir untuk banner feedback. */
   evaluasiTerakhir: EvaluasiLangsung | null;
+  /** Stempel waktu (ms) sampai kapan interaksi berikutnya ditahan setelah keluar panel. */
+  jedaInteraksiSampai: number;
 }
 
 /** Status satu sasaran pada modul kurikulum. */
@@ -879,6 +881,7 @@ class TokoDapur {
         modeInteraksi: false,
         objekInteraksiAktif: null,
         evaluasiTerakhir: null,
+        jedaInteraksiSampai: 0,
       },
     };
     this.perbaruiModul(true);
@@ -996,6 +999,8 @@ class TokoDapur {
       modeInteraksi: false,
       objekInteraksiAktif: null,
       evaluasiTerakhir: ev,
+      // Tahan interaksi selama 2,5 detik agar tidak langsung re-select.
+      jedaInteraksiSampai: performance.now() + 2500,
     };
     this.toast(ev.teks, ev.tingkat);
     this.emit();

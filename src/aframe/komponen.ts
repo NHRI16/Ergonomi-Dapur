@@ -247,6 +247,8 @@ export function pastikanKomponen() {
     },
     tick(t) {
       if (toko.keadaan.status.modeInteraksi) return;
+      // Jeda setelah keluar panel interaksi — hindari re-select langsung.
+      if (performance.now() < toko.keadaan.status.jedaInteraksiSampai) return;
       if (t - this.terakhirPindai < 120) return;
       this.terakhirPindai = t;
       const scene = this.el.sceneEl;
