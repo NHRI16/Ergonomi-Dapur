@@ -17,7 +17,9 @@ import { gunakanToko } from "./game/store";
 
 export default function App() {
   const wadah = useRef<HTMLDivElement>(null);
-  const antarmukaTersembunyi = gunakanToko((s) => s.status.antarmukaTersembunyi);
+  const status = gunakanToko((s) => s.status);
+  const antarmukaTersembunyi = status.antarmukaTersembunyi;
+  const tampilCrosshair = status.dimulai && !status.menuBuka && !status.bantuanBuka && !status.modelBuka && !status.modeInteraksi && !status.dalamVR;
 
   useEffect(() => {
     pastikanKomponen();
@@ -43,6 +45,17 @@ export default function App() {
       <div ref={wadah} className="bingkai-scene" />
       {/* Vignette lembut di atas kanvas */}
       <div className="vinyet pointer-events-none fixed inset-0 z-[5]" />
+      {/* Penanda arah selalu tersedia saat bermain, bahkan bila UI disembunyikan dengan U. */}
+      {tampilCrosshair && (
+        <div aria-hidden="true" className="pointer-events-none fixed left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
+          <div className={`crosshair-cincin h-9 w-9 rounded-full ${status.target ? "aktif" : "opacity-75"}`} />
+          <div
+            className={`absolute left-1/2 top-1/2 h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full transition-all ${
+              status.target ? "scale-125 bg-amber-400" : "bg-krem-50/85"
+            }`}
+          />
+        </div>
+      )}
       {/* Antarmuka permainan — tombol U menyembunyikan/menampilkannya. */}
       {!antarmukaTersembunyi && (
         <>

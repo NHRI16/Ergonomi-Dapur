@@ -361,18 +361,6 @@ export default function HUD() {
         ))}
       </div>
 
-      {/* ---------- Crosshair ---------- */}
-      {!uiTerbuka && !status.dalamVR && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className={`crosshair-cincin h-9 w-9 rounded-full ${status.target ? "aktif" : "opacity-75"}`} />
-          <div
-            className={`absolute left-1/2 top-1/2 h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full transition-all ${
-              status.target ? "scale-125 bg-amber-400" : "bg-krem-50/85"
-            }`}
-          />
-        </div>
-      )}
-
       {/* ---------- Indikator Mode Tata Letak ---------- */}
       {status.modeTata && !uiTerbuka && (
         <div className="absolute left-1/2 top-[76px] -translate-x-1/2 animate-masuk-atas">
