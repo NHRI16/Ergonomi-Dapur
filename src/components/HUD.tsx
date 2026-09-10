@@ -352,7 +352,8 @@ export default function HUD() {
           ["Q E", "putar objek"],
           ["R T", "tinggi / rendah"],
           ["K", "model 3D"],
-          ["Esc", "lepas kursor"],
+          ["U", "sembunyikan UI"],
+          ["Esc", "buka pengaturan"],
         ].map(([kunci, label]) => (
           <span key={kunci} className="flex items-center gap-1.5 text-[9.5px] text-krem-100/60">
             <span className="keycap">{kunci}</span> {label}
@@ -399,7 +400,7 @@ export default function HUD() {
               </span>
             )}
             <span className="flex items-center gap-1.5 text-[10px] text-krem-100/70">
-              <span className="keycap">Esc</span> lepas kursor
+              <span className="keycap">Esc</span> buka pengaturan
             </span>
           </div>
           {status.dipegang && (

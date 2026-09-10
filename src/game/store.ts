@@ -108,6 +108,8 @@ export type Sikap = "berdiri" | "jongkok" | "tegak";
 
 export interface StatusPermainan {
   dimulai: boolean;
+  /** Menyembunyikan seluruh antarmuka permainan; dapat diubah dengan tombol U. */
+  antarmukaTersembunyi: boolean;
   menuBuka: boolean;
   bantuanBuka: boolean;
   kursorTerkunci: boolean;
@@ -863,6 +865,7 @@ class TokoDapur {
       pengaturan: { ...PENGATURAN_AWAL },
       status: {
         dimulai: false,
+        antarmukaTersembunyi: false,
         menuBuka: false,
         bantuanBuka: false,
         kursorTerkunci: false,

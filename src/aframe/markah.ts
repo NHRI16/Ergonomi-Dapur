@@ -75,6 +75,7 @@ export function bangunMarkahDapur(): string {
     <img id="tx-dinding" src="/textures/dinding.jpg" />
     <img id="tx-backsplash" src="/textures/backsplash.jpg" />
     <img id="img-pemandangan" src="/images/pemandangan.jpg" />
+    <img id="img-pemandangan-gelap" src="/images/download (1).jpg" />
     <canvas id="kanvas-poster" width="512" height="640"></canvas>
     <canvas id="kanvas-panel" width="640" height="430"></canvas>
   </a-assets>

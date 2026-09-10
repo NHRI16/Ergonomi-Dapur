@@ -3,7 +3,7 @@
 // ErgoDapur — Komponen A-Frame Kustom
 // - tampilan-sensitif : kontrol pandang FPS dengan sensitivitas
 // - gerak-pemain      : WASD + jongkok (C) + tegak (Shift) + batas ruang
-// - manajer-interaksi : raycaster tengah layar untuk target F
+// - manajer-interaksi : raycaster tengah layar untuk target interaksi
 // - api-kompor, uap-panci, aliran-udara : animasi visual
 // - panel-skor, poster-ergonomi : tekstur kanvas dalam dunia 3D
 // - loop-permainan    : delegasi tick ke pengendali utama

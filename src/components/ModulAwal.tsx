@@ -36,7 +36,7 @@ const KELOMPOK_KONTROL: { judul: string; baris: [string, string][] }[] = [
       ["Klik", "Pilih barang atau buka opsi interaksi"],
       ["[ ]", "Geser / atur tinggi objek yang ditatap"],
       ["G", "Geser rak bumbu secara horizontal"],
-      ["Esc · M · H", "Menu · bisukan suara · bantuan"],
+      ["Esc · M · H · U", "Pengaturan · bisukan suara · bantuan · sembunyikan UI"],
     ],
   },
 ];

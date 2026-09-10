@@ -13,9 +13,11 @@ import ModulAwal from "./components/ModulAwal";
 import DebriefModul from "./components/DebriefModul";
 import ManajerModel from "./components/ManajerModel";
 import PanelInteraksiObjek from "./components/PanelInteraksiObjek";
+import { gunakanToko } from "./game/store";
 
 export default function App() {
   const wadah = useRef<HTMLDivElement>(null);
+  const antarmukaTersembunyi = gunakanToko((s) => s.status.antarmukaTersembunyi);
 
   useEffect(() => {
     pastikanKomponen();
@@ -41,13 +43,17 @@ export default function App() {
       <div ref={wadah} className="bingkai-scene" />
       {/* Vignette lembut di atas kanvas */}
       <div className="vinyet pointer-events-none fixed inset-0 z-[5]" />
-      {/* Antarmuka permainan */}
-      <HUD />
-      <PanelInteraksiObjek />
-      <DebriefModul />
-      <ManajerModel />
-      <MenuPengaturan />
-      <ModulAwal />
+      {/* Antarmuka permainan — tombol U menyembunyikan/menampilkannya. */}
+      {!antarmukaTersembunyi && (
+        <>
+          <HUD />
+          <PanelInteraksiObjek />
+          <DebriefModul />
+          <ManajerModel />
+          <MenuPengaturan />
+          <ModulAwal />
+        </>
+      )}
     </div>
   );
 }

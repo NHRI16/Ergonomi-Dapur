@@ -88,6 +88,7 @@ export class PengendaliDapur {
     matahari: 0.95,
     ambien: 0.5,
     peredup: 0,
+    pemandanganGelap: false,
     cincinR: 0.3,
   };
 
@@ -114,6 +115,7 @@ export class PengendaliDapur {
       cahayaKulkas: q("cahaya-kulkas"),
       daunJendela: q("daun-jendela"),
       aliranUdara: q("aliran-udara"),
+      pemandangan: q("pemandangan"),
       peredup: q("peredup-jendela"),
       sorotMeja: q("sorot-meja"),
       kerucut: q("kerucut-cahaya"),
@@ -162,9 +164,10 @@ export class PengendaliDapur {
     });
 
     window.addEventListener("keydown", this.padaTombol);
-    // Tangkap F sebelum event mencapai A-Frame, React, atau listener lama.
-    // Efeknya identik tombol yang tidak dipakai seperti Y pada proyek ini.
-    window.addEventListener("keydown", this.blokirTombolF, true);
+    // A-Frame memakai F untuk kontrol internal (mis. fullscreen/VR).
+    // Tangkap lebih awal agar F benar-benar tidak memiliki fungsi di simulasi.
+    window.addEventListener("keydown", this.nonaktifkanTombolF, true);
+    window.addEventListener("keyup", this.nonaktifkanTombolF, true);
     scene.addEventListener("click", this.padaKlik);
 
     scene.addEventListener("enter-vr", () => {
@@ -183,13 +186,14 @@ export class PengendaliDapur {
 
   hancur() {
     window.removeEventListener("keydown", this.padaTombol);
-    window.removeEventListener("keydown", this.blokirTombolF, true);
+    window.removeEventListener("keydown", this.nonaktifkanTombolF, true);
+    window.removeEventListener("keyup", this.nonaktifkanTombolF, true);
     this.scene?.removeEventListener("click", this.padaKlik);
     this.batalLangganan?.();
   }
 
   // ---------------- Papan ketik ----------------
-  private blokirTombolF = (e: KeyboardEvent) => {
+  private nonaktifkanTombolF = (e: KeyboardEvent) => {
     if (e.code !== "KeyF") return;
     e.preventDefault();
     e.stopImmediatePropagation();
@@ -208,13 +212,33 @@ export class PengendaliDapur {
 
     const st = toko.keadaan.status;
 
-    // Esc hanya melepas kursor dari permainan; pilihan barang tetap dipertahankan.
-    if (e.code === "Escape") {
-      if (!st.dalamVR) document.exitPointerLock?.();
+    if (!st.dimulai) return;
+
+    if (e.code === "Escape" && !e.repeat) {
+      if (st.menuBuka) {
+        toko.setStatus({ menuBuka: false });
+        if (!st.modeInteraksi) {
+          const kanvas = this.scene?.canvas;
+          try { kanvas?.requestPointerLock?.(); } catch {}
+        }
+      } else {
+        document.exitPointerLock?.();
+        toko.setStatus({
+          antarmukaTersembunyi: false,
+          bantuanBuka: false,
+          menuBuka: true,
+          modeInteraksi: false,
+          modelBuka: false,
+          objekInteraksiAktif: null,
+        });
+      }
       return;
     }
 
-    if (!st.dimulai) return;
+    if (e.code === "KeyU" && !e.repeat) {
+      toko.setStatus({ antarmukaTersembunyi: !st.antarmukaTersembunyi });
+      return;
+    }
 
     if (e.code === "KeyM") {
       const bisu = !toko.keadaan.pengaturan.bisu;
@@ -913,6 +937,10 @@ export class PengendaliDapur {
 
     // Mode siang / malam
     const gelap = k.pengaturan.modeGelap;
+    if (gelap !== v.pemandanganGelap) {
+      v.pemandanganGelap = gelap;
+      el.pemandangan?.setAttribute("material", "src", gelap ? "#img-pemandangan-gelap" : "#img-pemandangan");
+    }
     v.matahari = REDAM(v.matahari, gelap ? 0.045 : 0.95, 3, dt);
     v.ambien = REDAM(v.ambien, gelap ? 0.13 : 0.5, 3, dt);
     v.peredup = REDAM(v.peredup, gelap ? 0.78 : 0, 3, dt);
