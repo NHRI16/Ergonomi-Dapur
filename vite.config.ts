@@ -19,7 +19,7 @@ function parseBoundary(contentType: string): string | null {
 function parseMultipart(
   body: Buffer,
   boundary: string,
-): { filename: string; data: Buffer } | null {
+): { filename: string; data: Buffer; slotId: string } | null {
   const sep = Buffer.from("--" + boundary);
   const parts: Buffer[] = [];
   let start = 0;
@@ -30,18 +30,24 @@ function parseMultipart(
     start = idx + sep.length + 2; // skip \r\n after boundary
   }
 
+  let slotId = "";
+  let berkas: { filename: string; data: Buffer } | null = null;
   for (const part of parts) {
     const headerEnd = part.indexOf("\r\n\r\n");
     if (headerEnd === -1) continue;
     const header = part.slice(0, headerEnd).toString();
     const data = part.slice(headerEnd + 4);
+    const nameMatch = header.match(/name="([^"]+)"/);
 
     const fnMatch = header.match(/filename="([^"]+)"/);
-    if (!fnMatch) continue;
+    if (!fnMatch) {
+      if (nameMatch?.[1] === "slotId") slotId = data.toString().trim();
+      continue;
+    }
     const filename = path.basename(fnMatch[1]);
-    return { filename, data };
+    berkas = { filename, data };
   }
-  return null;
+  return berkas ? { ...berkas, slotId } : null;
 }
 
 // ─── Resolve nama file yang aman (hindari overwrite tanpa konfirmasi) ─────────
@@ -129,6 +135,18 @@ function pluginUploadModel(): Plugin {
               const namaFinal = namaAman(modelsDir, filename);
               const tujuan = path.join(modelsDir, namaFinal);
               fs.writeFileSync(tujuan, data);
+
+              if (parsed.slotId) {
+                const manifestPath = path.join(modelsDir, "slot-model.json");
+                let manifest: Record<string, Record<string, string>> = {};
+                try {
+                  manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+                } catch {
+                  /* buat manifest baru bila belum ada */
+                }
+                manifest[parsed.slotId] = { ...(manifest[parsed.slotId] ?? {}), jalur: `/models/${namaFinal}` };
+                fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+              }
 
               const jalur = `/models/${namaFinal}`;
               res.writeHead(200, { "Content-Type": "application/json" });

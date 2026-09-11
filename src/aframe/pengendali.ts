@@ -29,7 +29,7 @@ const NAMA_TATA: Record<string, string> = {
 
 /** Hitbox anak meja tetap memilih seluruh meja saat Mode Tata Letak. */
 const objekTataDariTarget = (id: string | null) => {
-  if (id === "meja-potong" || id === "talenan") return "meja-atas";
+  if (id === "meja-rangka" || id === "meja-potong" || id === "talenan") return "meja-atas";
   return id;
 };
 
@@ -106,6 +106,7 @@ export class PengendaliDapur {
       panciMesh: q("panci-mesh"),
       uap: q("uap"),
       mejaAtas: q("meja-atas"),
+      talenan: q("talenan"),
       mejaRangka: q("meja-rangka"),
       mejaKakiKiri: q("meja-kaki-kiri"),
       mejaKakiKanan: q("meja-kaki-kanan"),
@@ -339,7 +340,7 @@ export class PengendaliDapur {
     toko.setStatus({ target: targetId });
 
     // Klik pertama pada barang yang dapat dipindah = ambil barang.
-    if (id && OBJEK_TATA.includes(id)) {
+    if (id && OBJEK_TATA.includes(id) && targetId !== "talenan") {
       toko.setStatus({ modeTata: true, dipegang: id, target: id, modeInteraksi: false, objekInteraksiAktif: null });
       const cv = this.scene?.canvas;
       try { cv?.requestPointerLock?.(); } catch {}
@@ -862,6 +863,8 @@ export class PengendaliDapur {
     el.mejaRangka?.setAttribute("position", v3(v.mejaX, 0, v.mejaZ));
     el.mejaRangka?.setAttribute("rotation", v3(0, p.rotMeja, 0));
     el.mejaAtas?.setAttribute("position", v3(0, v.mejaH, 0));
+    el.talenan?.setAttribute("position", v3(0, v.mejaH - 0.003, 0));
+    el.mejaRangka?.components?.["slot-model"]?.aturTinggiMeja?.(v.mejaH);
     if (el.mejaKakiKiri) {
       el.mejaKakiKiri.setAttribute("scale", v3(1, v.mejaH, 1));
       el.mejaKakiKiri.setAttribute("position", v3(-0.56, v.mejaH / 2, 0));

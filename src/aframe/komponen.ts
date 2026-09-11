@@ -511,11 +511,55 @@ export function pastikanKomponen() {
     init() {
       this.wadah = null;
       this.jalurAktif = "";
+      this.skalaDasarMeja = null;
+      this.tinggiModelTerakhir = null;
       this.terapkan();
       this.batal = katalog.langganan(() => this.terapkan());
     },
     remove() {
       this.batal && this.batal();
+    },
+    selaraskanAlas() {
+      if (!this.wadah) return;
+      const obj = this.wadah.getObject3D("mesh");
+      const induk = this.el.object3D;
+      if (!obj || !induk) return;
+
+      const kotak = new AFRAME.THREE.Box3().setFromObject(obj);
+      const posisiInduk = new AFRAME.THREE.Vector3();
+      induk.getWorldPosition(posisiInduk);
+      const skala = Number(this.wadah.getAttribute("scale")?.x) || 1;
+      const alasLokal = (kotak.min.y - posisiInduk.y) / skala;
+      const posisi = this.wadah.getAttribute("position") || { x: 0, y: 0, z: 0 };
+      this.wadah.setAttribute("position", `0 ${posisi.y - alasLokal} 0`);
+    },
+    sesuaikanUkuranMeja() {
+      if (!this.wadah || this.data.slot !== "meja-atas") return;
+      const obj = this.wadah.getObject3D("mesh");
+      if (!obj) return;
+      const ukuran = new AFRAME.THREE.Vector3();
+      new AFRAME.THREE.Box3().setFromObject(obj).getSize(ukuran);
+      if (ukuran.x < 0.001 || ukuran.y < 0.001 || ukuran.z < 0.001) return;
+      const faktor = Number(this.wadah.getAttribute("scale")?.x) || 1;
+      const skala = {
+        x: faktor * 1.28 / ukuran.x,
+        y: faktor * 0.78 / ukuran.y,
+        z: faktor * 0.7 / ukuran.z,
+      };
+      this.wadah.setAttribute(
+        "scale",
+        `${skala.x.toFixed(5)} ${skala.y.toFixed(5)} ${skala.z.toFixed(5)}`,
+      );
+      this.skalaDasarMeja = skala;
+    },
+    aturTinggiMeja(tinggi: number) {
+      if (!this.wadah || !this.skalaDasarMeja || this.data.slot !== "meja-atas") return;
+      if (this.tinggiModelTerakhir !== null && Math.abs(this.tinggiModelTerakhir - tinggi) < 0.001) return;
+      this.tinggiModelTerakhir = tinggi;
+      const rasio = tinggi / 0.78;
+      const skala = this.skalaDasarMeja;
+      this.wadah.setAttribute("scale", `${skala.x} ${skala.y * rasio} ${skala.z}`);
+      this.selaraskanAlas();
     },
     terapkan() {
       const s = katalog.ambil(this.data.slot);
@@ -546,6 +590,8 @@ export function pastikanKomponen() {
             "model-loaded",
             () => {
               toko.toast(`Model "${s.nama}" berhasil dipasang.`, "baik");
+              this.sesuaikanUkuranMeja();
+              this.selaraskanAlas();
               // Aktifkan bayangan pada seluruh mesh model
               const obj = this.wadah.getObject3D("mesh");
               if (obj)
@@ -573,6 +619,7 @@ export function pastikanKomponen() {
       Array.from(el.children).forEach((anak) => {
         if (anak === this.wadah) return;
         if (anak.classList && anak.classList.contains("tetap-tampil")) return;
+        if (anak.hasAttribute && anak.hasAttribute("slot-model")) return;
         if (anak.hasAttribute && anak.hasAttribute("light")) return;
         anak.setAttribute("visible", !sembunyi);
       });

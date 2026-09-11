@@ -313,35 +313,34 @@ export function bangunMarkahDapur(): string {
     material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
 
   <!-- ================= PULAU MEJA POTONG (INTERAKTIF) ================= -->
-  <a-entity id="meja-rangka" position="-0.45 0 -0.55">
+  <a-entity id="meja-rangka" class="interaktif" slot-model="slot: meja-atas" position="-0.45 0 -0.55">
   <a-entity id="meja-kaki-kiri" geometry="primitive: box; width: 0.06; height: 1; depth: 0.56" position="-0.56 0.39 0" material="src: #tx-kayu; color: #8a6a45; roughness: 0.6" ${BAYANGAN}></a-entity>
   <a-entity id="meja-kaki-kanan" geometry="primitive: box; width: 0.06; height: 1; depth: 0.56" position="0.56 0.39 0" material="src: #tx-kayu; color: #8a6a45; roughness: 0.6" ${BAYANGAN}></a-entity>
   <a-entity id="meja-palang" geometry="primitive: box; width: 1.06; height: 0.06; depth: 0.05" position="0 0.12 0" material="color: #6e5636; roughness: 0.7"></a-entity>
-  <a-entity id="meja-atas" class="interaktif" slot-model="slot: meja-atas" position="0 0.78 0">
+  <a-entity id="meja-atas" class="interaktif" position="0 0.78 0">
     <a-entity id="meja-potong" class="interaktif" geometry="primitive: box; width: 1.28; height: 0.5; depth: 0.7" position="0 -0.2 0"
       material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
     <a-entity id="meja-permukaan" geometry="primitive: box; width: 1.24; height: 0.06; depth: 0.66" position="0 -0.03 0"
       material="src: #tx-marmer; repeat: 1.6 0.9; roughness: 0.22; metalness: 0.05" ${BAYANGAN}></a-entity>
-    <!-- talenan (interaktif): talenan, pisau, tomat -->
-    <a-entity id="talenan" class="interaktif tetap-tampil">
-      <a-entity geometry="primitive: box; width: 0.42; height: 0.018; depth: 0.3" position="-0.25 0.012 0" material="color: #cfa46f; roughness: 0.55" ${BAYANGAN}></a-entity>
-      <a-entity id="pisau" geometry="primitive: box; width: 0.17; height: 0.004; depth: 0.032" position="-0.1 0.024 0.09" rotation="0 -18 0" material="color: #d7dce1; metalness: 0.9; roughness: 0.2"></a-entity>
-      <a-entity geometry="primitive: box; width: 0.09; height: 0.014; depth: 0.026" position="0.035 0.028 0.115" rotation="0 -18 0" material="color: #2f3338; roughness: 0.5"></a-entity>
-      <a-entity id="tomat-utuh">
-        <a-entity geometry="primitive: sphere; radius: 0.045" position="0.28 0.045 0.1" material="color: #d84a3a; roughness: 0.35"></a-entity>
-        <a-entity geometry="primitive: sphere; radius: 0.042" position="0.37 0.042 -0.08" material="color: #d84a3a; roughness: 0.35"></a-entity>
-        <a-entity geometry="primitive: cylinder; radius: 0.008; height: 0.02" position="0.28 0.09 0.1" material="color: #4d6e3a; roughness: 0.6"></a-entity>
-      </a-entity>
-      <a-entity id="tomat-iris" visible="false">
-        <a-entity geometry="primitive: cylinder; radius: 0.04; height: 0.012" position="0.26 0.03 0.08" material="color: #d84a3a; roughness: 0.4"></a-entity>
-        <a-entity geometry="primitive: cylinder; radius: 0.038; height: 0.012" position="0.3 0.042 0.05" rotation="0 0 12" material="color: #e05a48; roughness: 0.4"></a-entity>
-        <a-entity geometry="primitive: cylinder; radius: 0.036; height: 0.012" position="0.22 0.03 0.02" rotation="0 25 0" material="color: #d84a3a; roughness: 0.4"></a-entity>
-        <a-entity geometry="primitive: cylinder; radius: 0.034; height: 0.012" position="0.34 0.03 -0.05" rotation="0 -20 -8" material="color: #e05a48; roughness: 0.4"></a-entity>
-        <a-entity geometry="primitive: cylinder; radius: 0.032; height: 0.012" position="0.28 0.054 0.0" rotation="0 40 15" material="color: #d84a3a; roughness: 0.4"></a-entity>
-      </a-entity>
-      <a-entity geometry="primitive: box; width: 0.07; height: 0.006; depth: 0.02" position="-0.31 0.024 -0.07" material="color: #7d9b4e; roughness: 0.7"></a-entity>
-      <a-entity geometry="primitive: box; width: 0.06; height: 0.006; depth: 0.02" position="-0.22 0.024 -0.09" rotation="0 30 0" material="color: #7d9b4e; roughness: 0.7"></a-entity>
+  </a-entity>
+  <a-entity id="talenan" class="interaktif tetap-tampil" slot-model="slot: talenan" position="0 0.78 0">
+    <a-entity geometry="primitive: box; width: 0.42; height: 0.018; depth: 0.3" position="-0.25 0.012 0" material="color: #cfa46f; roughness: 0.55" ${BAYANGAN}></a-entity>
+    <a-entity id="pisau" geometry="primitive: box; width: 0.17; height: 0.004; depth: 0.032" position="-0.1 0.024 0.09" rotation="0 -18 0" material="color: #d7dce1; metalness: 0.9; roughness: 0.2"></a-entity>
+    <a-entity geometry="primitive: box; width: 0.09; height: 0.014; depth: 0.026" position="0.035 0.028 0.115" rotation="0 -18 0" material="color: #2f3338; roughness: 0.5"></a-entity>
+    <a-entity id="tomat-utuh" class="tetap-tampil">
+      <a-entity geometry="primitive: sphere; radius: 0.045" position="0.28 0.045 0.1" material="color: #d84a3a; roughness: 0.35"></a-entity>
+      <a-entity geometry="primitive: sphere; radius: 0.042" position="0.37 0.042 -0.08" material="color: #d84a3a; roughness: 0.35"></a-entity>
+      <a-entity geometry="primitive: cylinder; radius: 0.008; height: 0.02" position="0.28 0.09 0.1" material="color: #4d6e3a; roughness: 0.6"></a-entity>
     </a-entity>
+    <a-entity id="tomat-iris" class="tetap-tampil" visible="false">
+      <a-entity geometry="primitive: cylinder; radius: 0.04; height: 0.012" position="0.26 0.03 0.08" material="color: #d84a3a; roughness: 0.4"></a-entity>
+      <a-entity geometry="primitive: cylinder; radius: 0.038; height: 0.012" position="0.3 0.042 0.05" rotation="0 0 12" material="color: #e05a48; roughness: 0.4"></a-entity>
+      <a-entity geometry="primitive: cylinder; radius: 0.036; height: 0.012" position="0.22 0.03 0.02" rotation="0 25 0" material="color: #d84a3a; roughness: 0.4"></a-entity>
+      <a-entity geometry="primitive: cylinder; radius: 0.034; height: 0.012" position="0.34 0.03 -0.05" rotation="0 -20 -8" material="color: #e05a48; roughness: 0.4"></a-entity>
+      <a-entity geometry="primitive: cylinder; radius: 0.032; height: 0.012" position="0.28 0.054 0.0" rotation="0 40 15" material="color: #d84a3a; roughness: 0.4"></a-entity>
+    </a-entity>
+    <a-entity geometry="primitive: box; width: 0.07; height: 0.006; depth: 0.02" position="-0.31 0.024 -0.07" material="color: #7d9b4e; roughness: 0.7"></a-entity>
+    <a-entity geometry="primitive: box; width: 0.06; height: 0.006; depth: 0.02" position="-0.22 0.024 -0.09" rotation="0 30 0" material="color: #7d9b4e; roughness: 0.7"></a-entity>
   </a-entity>
   </a-entity>
 

@@ -65,6 +65,16 @@ export const SLOT_BAWAAN: SlotModel[] = [
     sembunyikanPrimitif: true,
   },
   {
+    id: "talenan",
+    nama: "Tatakan Potong",
+    keterangan: "Tatakan yang menjadi area interaksi untuk memotong bahan.",
+    jalur: "",
+    skala: 1,
+    putarY: 0,
+    offsetY: 0,
+    sembunyikanPrimitif: true,
+  },
+  {
     id: "rak-bumbu",
     nama: "Rak Bumbu",
     keterangan: "Rak dinding beserta botol bumbu.",
@@ -109,6 +119,7 @@ class KatalogModel {
   constructor() {
     this.slot = SLOT_BAWAAN.map((s) => ({ ...s }));
     this.muat();
+    void this.muatManifestProyek();
   }
 
   private muat() {
@@ -143,6 +154,25 @@ class KatalogModel {
     }
   }
 
+  private async muatManifestProyek() {
+    try {
+      if (localStorage.getItem(KUNCI_SIMPAN)) return;
+      const resp = await fetch("/models/slot-model.json", { cache: "no-store" });
+      if (!resp.ok) return;
+      const manifest = (await resp.json()) as Record<string, Partial<SlotModel>>;
+      let berubah = false;
+      this.slot = this.slot.map((s) => {
+        const konfigurasi = manifest[s.id];
+        if (!konfigurasi) return s;
+        berubah = true;
+        return { ...s, ...konfigurasi, id: s.id, nama: s.nama, keterangan: s.keterangan };
+      });
+      if (berubah) this.emit();
+    } catch {
+      /* manifest tidak tersedia saat build statis lama */
+    }
+  }
+
   langganan = (fn: Pendengar) => {
     this.pendengar.add(fn);
     return () => this.pendengar.delete(fn);
@@ -174,6 +204,7 @@ class KatalogModel {
     try {
       const form = new FormData();
       form.append("file", berkas, namaFile);
+      form.append("slotId", id);
 
       const resp = await fetch("/api/upload-model", {
         method: "POST",
