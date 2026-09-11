@@ -272,12 +272,6 @@ export function bangunMarkahDapur(): string {
     <!-- pintu freezer (tetap) -->
     <a-entity geometry="primitive: box; width: 0.68; height: 0.5; depth: 0.035" position="0 1.55 0.32" material="color: #b9bfc7; metalness: 0.7; roughness: 0.3" ${BAYANGAN}></a-entity>
     <a-entity geometry="primitive: cylinder; radius: 0.013; height: 0.28" position="0.28 1.42 0.35" material="color: #aab2ba; metalness: 0.9; roughness: 0.2"></a-entity>
-    <!-- pintu utama (engsel kiri) -->
-    <a-entity id="pintu-kulkas" class="tetap-tampil" position="-0.33 0.88 0.33">
-      <a-entity geometry="primitive: box; width: 0.66; height: 0.82; depth: 0.035" position="0.33 0 0"
-        material="color: #c2c8cf; metalness: 0.7; roughness: 0.3" ${BAYANGAN}></a-entity>
-      <a-entity geometry="primitive: cylinder; radius: 0.014; height: 0.5" position="0.58 0.02 0.045" material="color: #b8bfc7; metalness: 0.9; roughness: 0.2"></a-entity>
-    </a-entity>
   </a-entity>
 
   <!-- ================= JENDELA VENTILASI (INTERAKTIF) ================= -->

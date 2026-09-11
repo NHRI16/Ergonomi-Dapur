@@ -32,6 +32,7 @@ import {
   lebarLorong,
   jarakRakKompor,
   hitungLuxMeja,
+  antropometri,
   type ApiKomporLevel,
 } from "../game/store";
 import { audio } from "../game/audio";
@@ -46,6 +47,7 @@ export default function PanelInteraksiObjek() {
 
   const target = st.objekInteraksiAktif;
   const lux = hitungLuxMeja(p);
+  const ukuranTubuh = antropometri(p);
   const lorong = lebarLorong(p);
   const dxRak = jarakRakKompor(p);
 
@@ -294,14 +296,14 @@ export default function PanelInteraksiObjek() {
           {(target === "meja-potong" || target === "talenan") && (
             <div className="space-y-4">
               {/* Tinggi Meja */}
-              <div className="kartu-bagian p-4">
+              {target === "meja-potong" && <div className="kartu-bagian p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-[12px] font-semibold text-krem-100/90 flex items-center gap-2">
                     <Ruler size={14} className="text-amber-400" /> Tinggi Meja Potong
                   </span>
                   <span
                     className={`teks-display text-[12px] font-bold px-2 py-0.5 rounded border ${
-                      p.mejaTinggi >= 85 && p.mejaTinggi <= 92
+                      p.mejaTinggi >= ukuranTubuh.idealBawah && p.mejaTinggi <= ukuranTubuh.idealAtas
                         ? "text-emerald-300 border-emerald-400/40 bg-emerald-400/10"
                         : "text-red-300 border-red-400/40 bg-red-400/10"
                     }`}
@@ -320,28 +322,28 @@ export default function PanelInteraksiObjek() {
                 />
                 <div className="flex justify-between text-[9.5px] text-krem-100/50 mt-1">
                   <span>60 cm (Terlalu Rendah)</span>
-                  <span className="text-emerald-400 font-semibold">85–92 cm (Zona Ideal Siku)</span>
+                  <span className="text-emerald-400 font-semibold">{ukuranTubuh.idealBawah}–{ukuranTubuh.idealAtas} cm (Zona Ideal)</span>
                   <span>100 cm (Terlalu Tinggi)</span>
                 </div>
-                {p.mejaTinggi < 85 && (
+                {p.mejaTinggi < ukuranTubuh.idealBawah && (
                   <p className="mt-2.5 text-[11px] text-red-300 flex items-center gap-1.5">
                     <AlertTriangle size={13} className="shrink-0" />
                     Meja terlalu rendah, risiko sakit punggung.
                   </p>
                 )}
-                {p.mejaTinggi > 92 && (
+                {p.mejaTinggi > ukuranTubuh.idealAtas && (
                   <p className="mt-2.5 text-[11px] text-amber-300 flex items-center gap-1.5">
                     <AlertTriangle size={13} className="shrink-0" />
                     Meja potong terlalu tinggi, bahu dan lengan cepat tegang.
                   </p>
                 )}
-                {p.mejaTinggi >= 85 && p.mejaTinggi <= 92 && (
+                {p.mejaTinggi >= ukuranTubuh.idealBawah && p.mejaTinggi <= ukuranTubuh.idealAtas && (
                   <p className="mt-2.5 text-[11px] text-emerald-300 flex items-center gap-1.5">
                     <CheckCircle2 size={13} className="shrink-0" />
                     Tinggi meja ideal (siku 90°), postur tubuh tegak dan nyaman.
                   </p>
                 )}
-              </div>
+              </div>}
 
               {/* Sensor Pencahayaan Meja (Lux Meter) */}
               <div className="kartu-bagian p-4">
@@ -409,7 +411,7 @@ export default function PanelInteraksiObjek() {
                 </div>
                 <button
                   onClick={() => {
-                    const posturBaik = p.mejaTinggi >= 85 && p.mejaTinggi <= 92;
+                    const posturBaik = p.mejaTinggi >= ukuranTubuh.idealBawah && p.mejaTinggi <= ukuranTubuh.idealAtas;
                     toko.setParams({ tomatDipotong: !p.tomatDipotong, potongPosturBaik: posturBaik });
                     audio.cincang();
                   }}
@@ -875,18 +877,33 @@ export default function PanelInteraksiObjek() {
               <div className="text-[12px] font-bold text-krem-50 flex items-center gap-2">
                 <Ruler size={15} className="text-amber-400" /> Hasil Antropometri Tubuh Anda
               </div>
+              <label className="block">
+                <span className="text-[10px] text-krem-100/60">Masukkan Tinggi Badan (cm)</span>
+                <input
+                  type="number"
+                  min={120}
+                  max={220}
+                  step={1}
+                  value={p.tinggiBadan}
+                  onChange={(e) => {
+                    const tinggiBadan = Math.max(120, Math.min(220, Number(e.target.value) || 168));
+                    toko.setParams({ tinggiBadan, sudahKalibrasi: true }, true);
+                  }}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-arang-950/60 px-3 py-2 text-sm font-bold text-krem-50 outline-none focus:border-amber-400/50"
+                />
+              </label>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-xl border border-white/10 bg-white/5 p-2.5">
                   <div className="text-[10px] text-krem-100/50">Tinggi Badan</div>
-                  <div className="teks-display text-base font-extrabold text-amber-300">168 cm</div>
+                  <div className="teks-display text-base font-extrabold text-amber-300">{Math.round(p.tinggiBadan)} cm</div>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/5 p-2.5">
                   <div className="text-[10px] text-krem-100/50">Tinggi Siku Berdiri</div>
-                  <div className="teks-display text-base font-extrabold text-amber-300">104 cm</div>
+                  <div className="teks-display text-base font-extrabold text-amber-300">{ukuranTubuh.tinggiSiku} cm</div>
                 </div>
                 <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-2.5">
                   <div className="text-[10px] text-emerald-300/70">Tinggi Meja Ideal</div>
-                  <div className="teks-display text-base font-extrabold text-emerald-300">85–92 cm</div>
+                  <div className="teks-display text-base font-extrabold text-emerald-300">{ukuranTubuh.idealBawah}–{ukuranTubuh.idealAtas} cm</div>
                 </div>
               </div>
               <p className="text-[11px] text-krem-100/70 leading-snug">

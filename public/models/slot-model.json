@@ -1,8 +1,11 @@
 {
   "meja-atas": {
-    "jalur": "/models/kitchen_table_1.glb"
+    "jalur": "/models/kitchen_table_3.glb"
   },
   "talenan": {
     "jalur": ""
+  },
+  "kulkas": {
+    "jalur": "/models/coca_cola_refrigerator_1.glb"
   }
 }

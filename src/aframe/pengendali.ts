@@ -6,7 +6,7 @@
 // penerapan pengaturan grafis, dan mode siang/malam.
 // ============================================================
 
-import { toko, lebarLorong, labelSkor, jarakRakKompor, BATAS_TATA, jepit } from "../game/store";
+import { toko, lebarLorong, labelSkor, jarakRakKompor, antropometri, BATAS_TATA, jepit } from "../game/store";
 import { audio } from "../game/audio";
 
 const REDAM = (nilai: number, target: number, laju: number, dt: number) =>
@@ -112,7 +112,6 @@ export class PengendaliDapur {
       mejaKakiKanan: q("meja-kaki-kanan"),
       rakBumbu: q("rak-bumbu"),
       kulkas: q("kulkas"),
-      pintuKulkas: q("pintu-kulkas"),
       cahayaKulkas: q("cahaya-kulkas"),
       daunJendela: q("daun-jendela"),
       aliranUdara: q("aliran-udara"),
@@ -387,15 +386,10 @@ export class PengendaliDapur {
     switch (id) {
       case "stasiun-ukur": {
         audio.klik();
-        // Tinggi mata kamera → estimasi antropometri pengguna
-        const mata = 160; // cm, tinggi mata berdiri pada simulasi ini
-        const badan = Math.round(mata + 8);
-        const siku = Math.round(badan * 0.62);
-        const idealBawah = siku - 15;
-        const idealAtas = siku - 8;
         if (!p.sudahKalibrasi) toko.setParams({ sudahKalibrasi: true }, true);
+        const { tinggiSiku, idealBawah, idealAtas } = antropometri(p);
         toko.toast(
-          `Hasil ukur — tinggi badan ≈ ${badan} cm, tinggi siku ≈ ${siku} cm.`,
+          `Hasil ukur — tinggi badan ${Math.round(p.tinggiBadan)} cm, tinggi siku ≈ ${tinggiSiku} cm.`,
           "info"
         );
         toko.toast(
@@ -511,7 +505,8 @@ export class PengendaliDapur {
         break;
       }
       case "talenan": {
-        const posturBaik = p.mejaTinggi >= 85 && p.mejaTinggi <= 92;
+        const ukuranTubuh = antropometri(p);
+        const posturBaik = p.mejaTinggi >= ukuranTubuh.idealBawah && p.mejaTinggi <= ukuranTubuh.idealAtas;
         const patch: any = { tomatDipotong: true };
         if (posturBaik && !p.potongPosturBaik) patch.potongPosturBaik = true;
         toko.setParams(patch, false);
@@ -874,9 +869,6 @@ export class PengendaliDapur {
       el.mejaKakiKanan.setAttribute("position", v3(0.56, v.mejaH / 2, 0));
     }
     el.mejaPalang?.setAttribute("position", v3(0, 0.12, 0));
-    // Lampu gantung mengikuti pulau meja
-    el.gantungan?.setAttribute("position", v3(v.mejaX + 0.45, 0, v.mejaZ + 0.55));
-
     // Slot model tambahan (Sketchfab)
     el.dekor1?.setAttribute("position", v3(p.dekor1X, p.dekor1Tinggi / 100, p.dekor1Z));
     el.dekor1?.setAttribute("rotation", v3(0, p.dekor1Rot, 0));
@@ -910,7 +902,6 @@ export class PengendaliDapur {
     el.kulkas?.setAttribute("position", v3(v.kulkasX, p.kulkasTinggi / 100, v.kulkasZ));
     el.kulkas?.setAttribute("rotation", v3(0, p.rotKulkas, 0));
     v.pintu = REDAM(v.pintu, p.kulkasTerbuka ? -112 : 0, 5.5, dt);
-    el.pintuKulkas?.setAttribute("rotation", v3(0, v.pintu, 0));
     el.cahayaKulkas?.setAttribute("light", "intensity", p.kulkasTerbuka ? 0.5 : 0);
 
     // Jendela: geser vertikal + aliran udara

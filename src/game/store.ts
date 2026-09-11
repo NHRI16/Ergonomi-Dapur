@@ -69,6 +69,7 @@ export interface ParameterDapur {
   dekor2Tinggi: number;
   dekor2Rot: number;
   mejaTinggi: number; // cm (60..100)
+  tinggiBadan: number; // cm, input antropometri pemain
   rakTinggi: number; // cm dari lantai (60..190)
   rakGeserX: number; // cm horizontal (-70..10), negatif = mendekati kompor
   kulkasTerbuka: boolean;
@@ -196,6 +197,7 @@ export const PARAM_AWAL: ParameterDapur = {
   dekor2Tinggi: 0,
   dekor2Rot: 0,
   mejaTinggi: 78,
+  tinggiBadan: 168,
   rakTinggi: 175,
   rakGeserX: 0,
   kulkasTerbuka: false,
@@ -219,6 +221,15 @@ export const PARAM_AWAL: ParameterDapur = {
   kulkasBukaJalurBebas: false,
   modulTuntas: 0,
 };
+
+export function antropometri(p: Pick<ParameterDapur, "tinggiBadan">) {
+  const tinggiSiku = Math.round(p.tinggiBadan * 0.62);
+  return {
+    tinggiSiku,
+    idealBawah: Math.max(60, tinggiSiku - 15),
+    idealAtas: Math.min(110, tinggiSiku - 8),
+  };
+}
 
 const PENGATURAN_AWAL: Pengaturan = {
   sensitivitas: 1,
@@ -494,20 +505,21 @@ function nilaiDapur(p: ParameterDapur): HasilNilai {
   pilar.kesehatan += Math.min(10, rakSkor);
 
   // ======== KENYAMANAN (25) ========
-  if (p.mejaTinggi >= 85 && p.mejaTinggi <= 92) pilar.kenyamanan += 12;
-  else if (p.mejaTinggi < 85) {
-    pilar.kenyamanan += p.mejaTinggi >= 80 ? 6 : 0;
+  const { idealBawah, idealAtas } = antropometri(p);
+  if (p.mejaTinggi >= idealBawah && p.mejaTinggi <= idealAtas) pilar.kenyamanan += 12;
+  else if (p.mejaTinggi < idealBawah) {
+    pilar.kenyamanan += p.mejaTinggi >= idealBawah - 5 ? 6 : 0;
     m.push({
       id: "meja-terlalu-rendah",
-      teks: "Meja terlalu rendah, risiko sakit punggung.",
-      tingkat: p.mejaTinggi < 80 ? "buruk" : "cukup",
+      teks: `Meja terlalu rendah untuk tinggi badan Anda (${idealBawah}–${idealAtas} cm).`,
+      tingkat: p.mejaTinggi < idealBawah - 5 ? "buruk" : "cukup",
     });
   } else {
-    pilar.kenyamanan += p.mejaTinggi <= 95 ? 6 : 0;
+    pilar.kenyamanan += p.mejaTinggi <= idealAtas + 3 ? 6 : 0;
     m.push({
       id: "meja-terlalu-tinggi",
-      teks: "Meja potong terlalu tinggi, bahu dan lengan cepat tegang.",
-      tingkat: p.mejaTinggi > 96 ? "buruk" : "cukup",
+      teks: `Meja terlalu tinggi untuk tinggi badan Anda (${idealBawah}–${idealAtas} cm).`,
+      tingkat: p.mejaTinggi > idealAtas + 3 ? "buruk" : "cukup",
     });
   }
 
@@ -586,15 +598,16 @@ export function evaluasiObjek(
     case "talenan": {
       namaObjek = "Meja Potong";
       const lux = hitungLuxMeja(p);
-      if (p.mejaTinggi < 85) {
+      const { idealBawah, idealAtas } = antropometri(p);
+      if (p.mejaTinggi < idealBawah) {
         judul = "Meja Terlalu Rendah";
         teks = "Meja terlalu rendah, risiko sakit punggung.";
-        saran = "Atur tinggi meja ke zona siku ideal 85–92 cm agar punggung tetap tegak.";
+        saran = `Atur tinggi meja ke ${idealBawah}–${idealAtas} cm sesuai tinggi badan Anda.`;
         tingkat = "buruk";
-      } else if (p.mejaTinggi > 92) {
+      } else if (p.mejaTinggi > idealAtas) {
         judul = "Meja Terlalu Tinggi";
         teks = "Meja potong terlalu tinggi, bahu dan lengan cepat tegang.";
-        saran = "Turunkan meja ke zona 85–92 cm agar bahu dan leher tetap rileks.";
+        saran = `Turunkan meja ke ${idealBawah}–${idealAtas} cm sesuai tinggi badan Anda.`;
         tingkat = "cukup";
       } else if (lux < 300) {
         judul = "Pencahayaan Kurang";

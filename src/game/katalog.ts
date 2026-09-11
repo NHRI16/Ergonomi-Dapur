@@ -156,7 +156,6 @@ class KatalogModel {
 
   private async muatManifestProyek() {
     try {
-      if (localStorage.getItem(KUNCI_SIMPAN)) return;
       const resp = await fetch("/models/slot-model.json", { cache: "no-store" });
       if (!resp.ok) return;
       const manifest = (await resp.json()) as Record<string, Partial<SlotModel>>;
@@ -165,7 +164,15 @@ class KatalogModel {
         const konfigurasi = manifest[s.id];
         if (!konfigurasi) return s;
         berubah = true;
-        return { ...s, ...konfigurasi, id: s.id, nama: s.nama, keterangan: s.keterangan };
+        const lokal = s.jalur.startsWith("blob:") ? s.jalur : "";
+        return {
+          ...s,
+          ...konfigurasi,
+          jalur: konfigurasi.jalur || lokal || s.jalur,
+          id: s.id,
+          nama: s.nama,
+          keterangan: s.keterangan,
+        };
       });
       if (berubah) this.emit();
     } catch {

@@ -513,6 +513,7 @@ export function pastikanKomponen() {
       this.jalurAktif = "";
       this.skalaDasarMeja = null;
       this.tinggiModelTerakhir = null;
+      this.modelSiap = false;
       this.terapkan();
       this.batal = katalog.langganan(() => this.terapkan());
     },
@@ -561,6 +562,16 @@ export function pastikanKomponen() {
       this.wadah.setAttribute("scale", `${skala.x} ${skala.y * rasio} ${skala.z}`);
       this.selaraskanAlas();
     },
+    aturVisibilitas(s) {
+      const sembunyi = !!s.jalur && s.sembunyikanPrimitif && this.modelSiap;
+      Array.from(this.el.children).forEach((anak) => {
+        if (anak === this.wadah) return;
+        if (anak.classList && anak.classList.contains("tetap-tampil")) return;
+        if (anak.hasAttribute && anak.hasAttribute("slot-model")) return;
+        if (anak.hasAttribute && anak.hasAttribute("light")) return;
+        anak.setAttribute("visible", !sembunyi);
+      });
+    },
     terapkan() {
       const s = katalog.ambil(this.data.slot);
       if (!s) return;
@@ -579,6 +590,8 @@ export function pastikanKomponen() {
           this.wadah.addEventListener(
             "model-error",
             () => {
+              this.modelSiap = false;
+              this.aturVisibilitas(s);
               toko.toast(
                 `Model "${s.nama}" gagal dimuat. Pastikan berkas .glb valid dan dapat diakses.`,
                 "buruk"
@@ -589,6 +602,8 @@ export function pastikanKomponen() {
           this.wadah.addEventListener(
             "model-loaded",
             () => {
+              this.modelSiap = true;
+              this.aturVisibilitas(s);
               toko.toast(`Model "${s.nama}" berhasil dipasang.`, "baik");
               this.sesuaikanUkuranMeja();
               this.selaraskanAlas();
@@ -612,17 +627,11 @@ export function pastikanKomponen() {
         el.removeChild(this.wadah);
         this.wadah = null;
         this.jalurAktif = "";
+        this.modelSiap = false;
       }
 
       // Tampilkan / sembunyikan primitif bawaan
-      const sembunyi = !!s.jalur && s.sembunyikanPrimitif;
-      Array.from(el.children).forEach((anak) => {
-        if (anak === this.wadah) return;
-        if (anak.classList && anak.classList.contains("tetap-tampil")) return;
-        if (anak.hasAttribute && anak.hasAttribute("slot-model")) return;
-        if (anak.hasAttribute && anak.hasAttribute("light")) return;
-        anak.setAttribute("visible", !sembunyi);
-      });
+      this.aturVisibilitas(s);
     },
   });
 
