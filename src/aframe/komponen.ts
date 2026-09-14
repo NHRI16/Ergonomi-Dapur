@@ -635,6 +635,102 @@ export function pastikanKomponen() {
     },
   });
 
+  // ---------- Ruang GLB: tampilkan hanya struktur ruangan ----------
+  // Logika: whitelist struktur selalu tampil (override).
+  // Blacklist furniture hanya berisi kata spesifik, BUKAN kata generik
+  // seperti "box","frame","board","object" yang sering ada di nama mesh arsitektural.
+  // Default: mesh tanpa cocok apapun DIBIARKAN tampil.
+  AFRAME.registerComponent("ruang-glb", {
+    // Kata kunci struktur ruangan → SELALU tampil (whitelist, override blacklist)
+    KATA_STRUKTUR: [
+      "floor","lantai","ground","wall","dinding","ceiling","plafon","atap",
+      "roof","window","jendela","glass","kaca","glazing","skirting","baseboard",
+      "trim","column","pillar","beam","structure","room","building","architecture",
+      "concrete","beton","tile","keramik","paint","plaster","molding"
+    ],
+    // Kata kunci furniture/interior → sembunyikan. Hanya kata SPESIFIK & aman.
+    KATA_SEMBUNYI: [
+      "chair","kursi","sofa","couch","armchair","stool","bench",
+      "desk","worktable","officetable","computertable",
+      "monitor","computer","laptop","keyboard","mouse_pad","mousepad",
+      "plant","tanaman","potted","flowerpot",
+      "locker","whiteboard","flipchart",
+      "printer","copier","server_rack","serverrack",
+      "curtain","venetian","blind_slat","jalousie",
+      "aircon","airconditioner","hvac",
+      "furniture","furnishing",
+      "shelf","bookshelf",              // Wooden Shelf_32 (rak kayu)
+      "trash","trashbin","trash_bin"   // Trash bin_31
+    ],
+    // faktor = max(5.5/2.48, 3.0/0.94, 5/1.83) = max(2.22, 3.21, 2.73) = 3.21
+    // Hasil: lebar≈7.96m, tinggi≈3.0m (pas primitif), dalam≈5.88m
+    // Dinding X ±3.98m, Z back ≈-2.44m (setelah geser +0.5m), Z front ≈+3.44m
+    TARGET_LEBAR: 5.5,  // X  — tidak mendominasi (5.5/2.48=2.22 < 3.21)
+    TARGET_TINGGI: 3.0, // Y  — DRIVER faktor (3.0/0.94=3.21) → ceiling tepat 3.0m
+    TARGET_DALAM: 5,    // Z  — tidak mendominasi (5/1.83=2.73 < 3.21)
+    init() {
+      this.el.addEventListener("model-loaded", () => {
+        const obj = this.el.getObject3D("mesh");
+        if (!obj) return;
+
+        // --- 1. Hitung bounding box & auto-scale ---
+        const T = AFRAME.THREE;
+        const kotak = new T.Box3().setFromObject(obj);
+        const ukuran = new T.Vector3();
+        kotak.getSize(ukuran);
+
+        if (ukuran.x > 0.001 && ukuran.y > 0.001 && ukuran.z > 0.001) {
+          const faktor = Math.max(
+            this.TARGET_LEBAR  / ukuran.x,
+            this.TARGET_TINGGI / ukuran.y,
+            this.TARGET_DALAM  / ukuran.z
+          );
+          this.el.object3D.scale.set(faktor, faktor, faktor);
+
+          // Geser lantai ke y=0 dan tengahkan X/Z
+          this.el.object3D.updateMatrixWorld(true);
+          const kb = new T.Box3().setFromObject(this.el.object3D);
+          const tengah = new T.Vector3();
+          kb.getCenter(tengah);
+          this.el.object3D.position.y += -kb.min.y;
+          this.el.object3D.position.x += -tengah.x;
+          this.el.object3D.position.z += -tengah.z;
+          // Geser +0.5m ke arah dapur (dinding belakang GLB ≈-2.44m, 0.55m di
+          // belakang kabinet z≈-1.89m — proporsional dengan tata letak dapur)
+          this.el.object3D.position.z += 0.5;
+        }
+
+        // --- 2. Filter: whitelist struktur vs blacklist furniture ---
+        // (Material Wood_124 sudah doubleSided=true di GLTF, tidak perlu override manual)
+        const kataSt = this.KATA_STRUKTUR;
+        const kataSb = this.KATA_SEMBUNYI;
+
+        obj.traverse((n) => {
+          // Proses semua tipe node (Mesh, Object3D, Group adalah subkelas Object3D)
+          if (!n.isMesh && !(n.isObject3D && n.children && n.children.length > 0)) return;
+          const nama = (n.name || "").toLowerCase();
+
+          // Whitelist: jika nama mengandung kata struktur → paksa tampil
+          if (kataSt.some((k) => nama.includes(k))) {
+            n.visible = true;
+            if (n.isMesh) { n.castShadow = false; n.receiveShadow = true; }
+            return;
+          }
+
+          // Blacklist: jika nama mengandung kata furniture spesifik → sembunyikan
+          if (kataSb.some((k) => nama.includes(k))) {
+            n.visible = false;
+            n.traverse((anak) => { anak.visible = false; });
+            return;
+          }
+
+          // Default: biarkan tampil (mesh tanpa nama cocok = struktur ruangan)
+          if (n.isMesh) { n.castShadow = false; n.receiveShadow = true; }
+        });
+      }, { once: true });
+    },
+  });
+
   // ---------- Loop permainan global ----------
   AFRAME.registerComponent("loop-permainan", {
     tick(t, dt) {

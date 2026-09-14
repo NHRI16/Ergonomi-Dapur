@@ -78,6 +78,7 @@ export function bangunMarkahDapur(): string {
     <img id="img-pemandangan-gelap" src="/images/download (1).jpg" />
     <canvas id="kanvas-poster" width="512" height="640"></canvas>
     <canvas id="kanvas-panel" width="640" height="430"></canvas>
+    <a-asset-item id="mdl-ruang" src="/models/small_office_room.glb" response-type="arraybuffer"></a-asset-item>
   </a-assets>
 
   <!-- ================= PEMAIN ================= -->
@@ -94,25 +95,45 @@ export function bangunMarkahDapur(): string {
       position="0 0 -0.6" visible="false"></a-entity>
   </a-entity>
 
+  <!-- ================= RUANG ENVIRONMENT (small_office_room.glb) ================= -->
+  <!-- Model hanya digunakan sebagai lantai/dinding/atap/jendela.                   -->
+  <!-- Komponen ruang-glb menyembunyikan furniture & objek interior dari model.     -->
+  <a-entity id="ruang-glb"
+    gltf-model="#mdl-ruang"
+    ruang-glb
+    position="0 0 0"
+    scale="1 1 1"
+    rotation="0 0 0">
+  </a-entity>
+
   <!-- ================= RUANG ================= -->
   <a-entity geometry="primitive: plane; width: 5; height: 4.5" rotation="-90 0 0"
     material="src: #tx-lantai; repeat: 3 2.6; roughness: 0.35; metalness: 0.04; color: #f2ede3" ${TERIMA}></a-entity>
   <a-entity geometry="primitive: plane; width: 5; height: 4.5" rotation="90 0 0" position="0 3 0"
     material="color: #efe9dd; roughness: 1"></a-entity>
+  <!-- Dinding primitif DISEMBUNYIKAN (visible="false") agar dinding GLB small_office_room.glb -->
+  <!-- bisa terlihat. Elemen tidak dihapus, hanya dinonaktifkan secara visual.              -->
   <a-entity geometry="primitive: plane; width: 5; height: 3" position="0 1.5 -2.25"
+    visible="false"
     material="src: #tx-dinding; repeat: 4 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
   <a-entity geometry="primitive: plane; width: 5; height: 3" position="0 1.5 2.25" rotation="0 180 0"
+    visible="false"
     material="src: #tx-dinding; repeat: 4 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
   <a-entity geometry="primitive: plane; width: 4.5; height: 3" position="-2.5 1.5 0" rotation="0 90 0"
+    visible="false"
     material="src: #tx-dinding; repeat: 3.6 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
   <!-- dinding kanan (dengan lubang jendela) -->
   <a-entity geometry="primitive: plane; width: 1.25; height: 3" position="2.5 1.5 -1.625" rotation="0 -90 0"
+    visible="false"
     material="src: #tx-dinding; repeat: 1.4 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
   <a-entity geometry="primitive: plane; width: 2.05; height: 3" position="2.5 1.5 1.225" rotation="0 -90 0"
+    visible="false"
     material="src: #tx-dinding; repeat: 2.2 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
   <a-entity geometry="primitive: plane; width: 1.2; height: 1.03" position="2.5 0.515 -0.4" rotation="0 -90 0"
+    visible="false"
     material="src: #tx-dinding; repeat: 1.2 1; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
   <a-entity geometry="primitive: plane; width: 1.2; height: 0.9" position="2.5 2.55 -0.4" rotation="0 -90 0"
+    visible="false"
     material="src: #tx-dinding; repeat: 1.2 0.9; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
   <!-- lis bawah -->
   <a-entity geometry="primitive: box; width: 5; height: 0.09; depth: 0.02" position="0 0.045 -2.24" material="color: #ded5c4; roughness: 0.9"></a-entity>
