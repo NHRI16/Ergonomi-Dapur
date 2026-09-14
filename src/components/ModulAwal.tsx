@@ -65,9 +65,20 @@ export default function ModulAwal() {
     audio.mulai();
     if (!dimulai) {
       audio.sambut();
-      toko.setStatus({ dimulai: true });
+      toko.setParams({
+        komporX: -2.05 + Math.random() * 1.3,
+        komporJarak: 5 + Math.round(Math.random() * 35),
+        kulkasGeser: Math.round(Math.random() * 60),
+        kulkasZ: -1.95 + Math.random() * 0.6,
+        mejaX: -1.55 + Math.random() * 2.3,
+        mejaZ: -1.05 + Math.random() * 2.3,
+        mejaTinggi: 65 + Math.round(Math.random() * 35),
+        rakTinggi: 70 + Math.round(Math.random() * 110),
+        rakGeserX: -60 + Math.round(Math.random() * 70),
+      }, true);
+      toko.setStatus({ dimulai: true, modeTata: true, fase: "tata" });
       toko.toast(
-        "Selamat datang di ErgoDapur! Mulai Modul 1 — ukur dimensi tubuh Anda di meteran dinding sebelah kiri.",
+        "Ukur tinggi badan di stasiun ukur terlebih dahulu. Setelah itu tata meja, kulkas, kompor, dan rak bumbu.",
         "info"
       );
     } else {

@@ -3,17 +3,20 @@
 // ============================================================
 
 import { useState } from "react";
-import { CheckCircle2, ChevronDown, ChevronUp, GraduationCap, Info, Lock, Target } from "lucide-react";
-import { gunakanToko } from "../game/store";
+import { ArrowRight, CheckCircle2, ChevronDown, ChevronUp, GraduationCap, Info, Lock, Target } from "lucide-react";
+import { gunakanToko, toko } from "../game/store";
+import { audio } from "../game/audio";
 
 export default function PanelModul() {
   const modul = gunakanToko((s) => s.modul);
   const aktifIdx = gunakanToko((s) => s.modulAktif);
+  const fase = gunakanToko((s) => s.status.fase);
   const [lipat, setLipat] = useState(false);
 
   if (!modul.length) return null;
   const aktif = modul[aktifIdx];
   const totalTuntas = modul.filter((m) => m.tuntas).length;
+  const penataanSelesai = modul.slice(0, 4).every((m) => m.tuntas);
 
   return (
     <div className="kaca pointer-events-auto absolute bottom-4 left-4 w-[330px] animate-masuk-atas rounded-2xl p-3.5">
@@ -132,6 +135,19 @@ export default function PanelModul() {
             Berikutnya — Modul {modul[aktifIdx + 1].nomor}: {modul[aktifIdx + 1].judul}
           </span>
         </div>
+      )}
+
+      {penataanSelesai && fase === "tata" && (
+        <button
+          onClick={() => {
+            toko.setStatus({ fase: "masak", modeTata: false, dipegang: null, target: null });
+            toko.toast("Penataan selesai. Simulasi memasak dimulai.", "baik");
+            audio.beralih();
+          }}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 px-3 py-2.5 text-[11px] font-extrabold text-arang-950 transition hover:bg-emerald-300"
+        >
+          Lanjut ke Simulasi Memasak <ArrowRight size={14} />
+        </button>
       )}
     </div>
   );

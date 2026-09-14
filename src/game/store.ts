@@ -32,6 +32,7 @@ export const MAKS_PILAR: Pilar = { keselamatan: 30, efisiensi: 25, kesehatan: 20
 
 export type ApiKomporLevel = "mati" | "rendah" | "sedang" | "tinggi";
 export type PosisiPanci = "tengah" | "tepi";
+export type FaseSimulasi = "tata" | "masak";
 
 export interface EvaluasiLangsung {
   id: string;
@@ -83,6 +84,8 @@ export interface ParameterDapur {
   hoodNyala: boolean; // penyedot asap aktif
   tomatDipotong: boolean; // bahan sudah dipotong di talenan
   bahanDitaruh: boolean; // bahan diletakkan di talenan
+  bahanDibawa: boolean;
+  bumbuDiambil: boolean;
   panciDiambil: number;
 
   // ----- Pelacakan capaian & urutan kerja (untuk kurikulum) -----
@@ -120,6 +123,7 @@ export interface StatusPermainan {
   targetJarak: number;
   /** Mode tata letak (build mode) aktif. */
   modeTata: boolean;
+  fase: FaseSimulasi;
   /** Objek yang sedang diangkat/dipindahkan. */
   dipegang: string | null;
   /** Panel manajer model 3D terbuka. */
@@ -164,6 +168,8 @@ export interface Keadaan {
   params: ParameterDapur;
   pilar: Pilar;
   skor: number;
+  skorPenataan: number;
+  skorMemasak: number;
   masalah: Masalah[];
   toasts: Toast[];
   modul: ModulStatus[];
@@ -210,7 +216,9 @@ export const PARAM_AWAL: ParameterDapur = {
   keranNyala: false,
   hoodNyala: false,
   tomatDipotong: false,
-  bahanDitaruh: true,
+  bahanDitaruh: false,
+  bahanDibawa: false,
+  bumbuDiambil: false,
   panciDiambil: 0,
   sudahKalibrasi: false,
   potongPosturBaik: false,
@@ -259,6 +267,7 @@ export const BATAS_TATA = {
   kompor: { xMin: -2.05, xMax: -0.75, zMin: -2.0, zMax: -1.65 },
   kulkas: { xMin: 0.55, xMax: 2.05, zMin: -1.95, zMax: -1.35 },
   meja: { xMin: -1.55, xMax: 0.75, zMin: -1.05, zMax: 1.25 },
+  rak: { xMin: -0.15, xMax: 0.55, zMin: -2.2, zMax: -2.0 },
 } as const;
 
 export const jepit = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
@@ -336,6 +345,32 @@ interface HasilNilai {
   pilar: Pilar;
   skor: number;
   masalah: Masalah[];
+}
+
+function nilaiPenataan(p: ParameterDapur) {
+  const ukuran = antropometri(p);
+  const meja = p.mejaTinggi >= ukuran.idealBawah && p.mejaTinggi <= ukuran.idealAtas;
+  const lampu = Math.hypot(p.mejaX + 0.45, p.mejaZ + 0.55) <= 0.7;
+  const hood = Math.abs(p.komporX + 1.3) <= 0.35 && p.komporJarak >= 5;
+  const rak = p.rakTinggi >= 90 && p.rakTinggi <= 150 && jarakRakKompor(p) <= 1.2;
+  const jarakKulkasWastafel = segitigaKerja(p).wk;
+  const kulkas = jarakKulkasWastafel >= 1.2 && jarakKulkasWastafel <= 2.8;
+  return Math.round(([lampu, hood, meja, rak, kulkas].filter(Boolean).length / 5) * 100);
+}
+
+function nilaiMemasak(p: ParameterDapur) {
+  const langkah = [
+    p.bahanDibawa,
+    p.bahanDicuci,
+    p.bahanDitaruh,
+    p.lampuMejaFokus,
+    p.tomatDipotong,
+    p.ventilasiBuka,
+    p.komporNyala,
+    p.hoodNyala,
+    p.bumbuDiambil,
+  ];
+  return Math.round((langkah.filter(Boolean).length / langkah.length) * 100);
 }
 
 function nilaiDapur(p: ParameterDapur): HasilNilai {
@@ -546,7 +581,7 @@ function nilaiDapur(p: ParameterDapur): HasilNilai {
 
   const skor = Math.max(
     0,
-    Math.min(100, Math.round(pilar.keselamatan + pilar.efisiensi + pilar.kesehatan + pilar.kenyamanan))
+    Math.min(100, Math.round(nilaiPenataan(p) * 0.7 + nilaiMemasak(p) * 0.3))
   );
   return { pilar, skor, masalah: m };
 }
@@ -872,6 +907,8 @@ class TokoDapur {
       params: { ...PARAM_AWAL },
       pilar: nilai.pilar,
       skor: nilai.skor,
+      skorPenataan: nilaiPenataan(PARAM_AWAL),
+      skorMemasak: nilaiMemasak(PARAM_AWAL),
       masalah: nilai.masalah,
       toasts: [],
       modul: [],
@@ -889,6 +926,7 @@ class TokoDapur {
         target: null,
         targetJarak: 0,
         modeTata: false,
+        fase: "tata",
         dipegang: null,
         modelBuka: false,
         modeInteraksi: false,
@@ -919,6 +957,8 @@ class TokoDapur {
       p: k.params,
       pilar: k.pilar,
       skor: k.skor,
+      skorPenataan: k.skorPenataan,
+      skorMemasak: k.skorMemasak,
       status: k.status,
       merah: k.masalah.filter((m) => m.tingkat === "buruk").length,
     };
@@ -1040,6 +1080,8 @@ class TokoDapur {
     const nilai = nilaiDapur(this.keadaan.params);
     this.keadaan.pilar = nilai.pilar;
     this.keadaan.skor = nilai.skor;
+    this.keadaan.skorPenataan = nilaiPenataan(this.keadaan.params);
+    this.keadaan.skorMemasak = nilaiMemasak(this.keadaan.params);
     this.keadaan.masalah = nilai.masalah;
     if (!senyap) {
       const idSebelum = new Set(sebelum.map((m) => m.id));
@@ -1078,9 +1120,19 @@ class TokoDapur {
 
   aturUlangDapur() {
     this.keadaan.params = { ...PARAM_AWAL };
+    this.keadaan.status = {
+      ...this.keadaan.status,
+      fase: "tata",
+      modeTata: true,
+      dipegang: null,
+      modeInteraksi: false,
+      objekInteraksiAktif: null,
+    };
     const nilai = nilaiDapur(this.keadaan.params);
     this.keadaan.pilar = nilai.pilar;
     this.keadaan.skor = nilai.skor;
+    this.keadaan.skorPenataan = nilaiPenataan(this.keadaan.params);
+    this.keadaan.skorMemasak = nilaiMemasak(this.keadaan.params);
     this.keadaan.masalah = nilai.masalah;
     this.perbaruiModul(true);
     this.toast("Tata letak dapur dikembalikan ke kondisi awal.", "info");

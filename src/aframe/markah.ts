@@ -135,13 +135,6 @@ export function bangunMarkahDapur(): string {
   <!-- backsplash -->
   <a-entity geometry="primitive: plane; width: 3.25; height: 0.62" position="-0.675 1.21 -2.243"
     material="src: #tx-backsplash; repeat: 3 0.6; roughness: 0.15; metalness: 0.02" ${TERIMA}></a-entity>
-  <!-- kabinet atas -->
-  <a-entity geometry="primitive: box; width: 0.78; height: 0.65; depth: 0.34" position="-1.9 1.875 -2.06"
-    material="src: #tx-kayu; repeat: 1 1; color: #c99a68; roughness: 0.6" ${BAYANGAN}></a-entity>
-  <a-entity geometry="primitive: box; width: 0.78; height: 0.65; depth: 0.34" position="-1.06 1.875 -2.06"
-    material="src: #tx-kayu; repeat: 1 1; color: #c99a68; roughness: 0.6" ${BAYANGAN}></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.011; height: 0.2" position="-1.58 1.8 -1.88" material="color: #d9c9a8; metalness: 0.85; roughness: 0.25"></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.011; height: 0.2" position="-0.74 1.8 -1.88" material="color: #d9c9a8; metalness: 0.85; roughness: 0.25"></a-entity>
   <!-- strip LED bawah kabinet -->
   <a-entity id="strip-led-1" geometry="primitive: box; width: 0.74; height: 0.014; depth: 0.03" position="-1.9 1.538 -1.93"
     material="color: #7a6a52; emissive: #ffd9a0; emissiveIntensity: 0.9"></a-entity>
@@ -205,7 +198,7 @@ export function bangunMarkahDapur(): string {
   </a-entity>
 
   <!-- hood (dibungkus grup agar mengikuti kompor) -->
-  <a-entity id="hood-grup" position="0 0 0">
+  <a-entity id="hood-grup" position="0 0 0" slot-model="slot: hood">
   <a-entity geometry="primitive: box; width: 0.7; height: 0.32; depth: 0.45" position="-1.3 2.16 -1.95"
     material="color: #ccd1d8; metalness: 0.85; roughness: 0.28" ${BAYANGAN}></a-entity>
   <a-entity geometry="primitive: box; width: 0.3; height: 0.72; depth: 0.28" position="-1.3 2.62 -1.98" material="color: #b8bec6; metalness: 0.85; roughness: 0.3"></a-entity>
@@ -233,7 +226,7 @@ export function bangunMarkahDapur(): string {
   <a-entity geometry="primitive: box; width: 0.05; height: 0.02; depth: 0.03" position="-0.04 1.22 -2.06" material="color: #3f7fae; metalness: 0.6; roughness: 0.3"></a-entity>
   <a-entity id="aliran-air" geometry="primitive: cylinder; radius: 0.013; height: 0.28" position="-0.1 1.0 -1.95"
     material="color: #9fd4f5; transparent: true; opacity: 0.0; emissive: #7dd3fc; emissiveIntensity: 0.25" visible="false"></a-entity>
-  <a-entity id="wastafel" class="interaktif" geometry="primitive: box; width: 0.62; height: 0.5; depth: 0.5" position="-0.1 1.05 -1.92"
+  <a-entity id="wastafel" class="interaktif" slot-model="slot: wastafel" geometry="primitive: box; width: 0.62; height: 0.5; depth: 0.5" position="-0.1 1.05 -1.92"
     material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
 
   <!-- ================= RAK BUMBU (INTERAKTIF) ================= -->
@@ -253,7 +246,7 @@ export function bangunMarkahDapur(): string {
   <a-entity geometry="primitive: cylinder; radius: 0.115; height: 0.1" position="0.5 0.45 -1.9" material="color: #5d6670; metalness: 0.8; roughness: 0.4"></a-entity>
   <a-entity geometry="primitive: cylinder; radius: 0.12; height: 0.045" position="0.72 0.315 -1.86" material="color: #33383e; metalness: 0.85; roughness: 0.35"></a-entity>
   <a-entity geometry="primitive: cylinder; radius: 0.012; height: 0.2" position="0.87 0.315 -1.83" rotation="0 0 78" material="color: #2b2f34; roughness: 0.5"></a-entity>
-  <a-entity id="rak-bawah" class="interaktif" geometry="primitive: box; width: 0.6; height: 0.55; depth: 0.55" position="0.56 0.32 -1.86"
+  <a-entity id="rak-bawah" class="interaktif" slot-model="slot: rak-bawah" geometry="primitive: box; width: 0.6; height: 0.55; depth: 0.55" position="0.56 0.32 -1.86"
     material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
 
   <!-- ================= KULKAS (INTERAKTIF) ================= -->
@@ -303,7 +296,7 @@ export function bangunMarkahDapur(): string {
     <a-entity geometry="primitive: torus; radius: 0.12; radiusTubular: 0.005; arc: 110" rotation="0 90 -20" position="0 0.12 0.15" material="color: #ffffff; transparent: true; opacity: 0; depthWrite: false"></a-entity>
     <a-entity geometry="primitive: torus; radius: 0.2; radiusTubular: 0.005; arc: 100" rotation="0 90 60" position="0 -0.08 -0.12" material="color: #ffffff; transparent: true; opacity: 0; depthWrite: false"></a-entity>
   </a-entity>
-  <a-entity id="ventilasi" class="interaktif" geometry="primitive: box; width: 0.25; height: 1.2; depth: 1.4" position="2.4 1.55 -0.4"
+  <a-entity id="ventilasi" class="interaktif" slot-model="slot: ventilasi" geometry="primitive: box; width: 0.25; height: 1.2; depth: 1.4" position="2.4 1.55 -0.4"
     material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
 
   <!-- ================= PULAU MEJA POTONG (INTERAKTIF) ================= -->
@@ -348,7 +341,7 @@ export function bangunMarkahDapur(): string {
   <a-entity id="kerucut-cahaya" geometry="primitive: cone; radiusBottom: 0.5; radiusTop: 0.12; height: 1.0; openEnded: true" position="-0.45 1.42 -0.55"
     material="color: #ffe9c0; transparent: true; opacity: 0.0; side: double; depthWrite: false; emissive: #ffe9c0; emissiveIntensity: 0.25"></a-entity>
   <a-entity id="sorot-meja" light="type: point; color: #ffd9a0; intensity: 0.9; distance: 2.4; decay: 2" position="-0.45 1.7 -0.55"></a-entity>
-  <a-entity id="lampu-meja" class="interaktif" geometry="primitive: cylinder; radius: 0.2; height: 0.3" position="-0.45 1.98 -0.55"
+  <a-entity id="lampu-meja" class="interaktif" slot-model="slot: lampu-meja" geometry="primitive: cylinder; radius: 0.2; height: 0.3" position="-0.45 1.98 -0.55"
     material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
   </a-entity>
 
@@ -383,7 +376,7 @@ export function bangunMarkahDapur(): string {
   <a-entity id="layar-ukur" geometry="primitive: plane; width: 0.3; height: 0.34" position="-2.405 2.2 1.0" rotation="0 90 0"
     material="color: #1b2a24; emissive: #34d399; emissiveIntensity: 0.35"></a-entity>
   <a-entity geometry="primitive: circle; radius: 0.16" rotation="-90 0 0" position="-2.18 0.014 1.0" material="color: #c96f4a; transparent: true; opacity: 0.45"></a-entity>
-  <a-entity id="stasiun-ukur" class="interaktif" geometry="primitive: box; width: 0.55; height: 2.2; depth: 0.6" position="-2.28 1.1 1.0"
+  <a-entity id="stasiun-ukur" class="interaktif" slot-model="slot: stasiun-ukur" geometry="primitive: box; width: 0.55; height: 2.2; depth: 0.6" position="-2.28 1.1 1.0"
     material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
 
   <a-entity geometry="primitive: box; width: 0.02; height: 0.78; depth: 0.62" position="-2.495 1.66 -0.3" material="color: #3a2f26; roughness: 0.7"></a-entity>
@@ -407,20 +400,6 @@ export function bangunMarkahDapur(): string {
   <a-entity id="cincin-target" geometry="primitive: torus; radius: 0.3; radiusTubular: 0.007" rotation="-90 0 0"
     material="color: #fbbf24; emissive: #f59e0b; emissiveIntensity: 1.4; transparent: true; opacity: 0.85; depthWrite: false"
     position="0 -5 0" visible="false"></a-entity>
-
-  <!-- ================= SLOT MODEL TAMBAHAN (SKETCHFAB) ================= -->
-  <a-entity id="dekor-1" class="interaktif" slot-model="slot: dekor-1" position="-1.9 0 1.5">
-    <a-entity class="tanda-slot" geometry="primitive: cylinder; radius: 0.22; height: 0.02" position="0 0.012 0"
-      material="color: #7dd3fc; transparent: true; opacity: 0.28; emissive: #7dd3fc; emissiveIntensity: 0.4"></a-entity>
-    <a-entity class="tanda-slot" geometry="primitive: torus; radius: 0.24; radiusTubular: 0.008" rotation="-90 0 0" position="0 0.02 0"
-      material="color: #7dd3fc; transparent: true; opacity: 0.5; emissive: #7dd3fc; emissiveIntensity: 0.7"></a-entity>
-  </a-entity>
-  <a-entity id="dekor-2" class="interaktif" slot-model="slot: dekor-2" position="1.7 0 1.5">
-    <a-entity class="tanda-slot" geometry="primitive: cylinder; radius: 0.22; height: 0.02" position="0 0.012 0"
-      material="color: #7dd3fc; transparent: true; opacity: 0.28; emissive: #7dd3fc; emissiveIntensity: 0.4"></a-entity>
-    <a-entity class="tanda-slot" geometry="primitive: torus; radius: 0.24; radiusTubular: 0.008" rotation="-90 0 0" position="0 0.02 0"
-      material="color: #7dd3fc; transparent: true; opacity: 0.5; emissive: #7dd3fc; emissiveIntensity: 0.7"></a-entity>
-  </a-entity>
 
   <!-- Grid bantu Mode Tata Letak -->
   <a-entity id="grid-tata" visible="false" position="0 0.008 0">

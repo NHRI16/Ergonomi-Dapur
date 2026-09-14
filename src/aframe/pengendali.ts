@@ -13,18 +13,17 @@ const REDAM = (nilai: number, target: number, laju: number, dt: number) =>
   nilai + (target - nilai) * Math.min(1, (dt / 1000) * laju);
 
 /** Objek yang dapat dipindahkan bebas pada Mode Tata Letak. */
-export const OBJEK_TATA = ["kompor", "kulkas", "meja-atas", "dekor-1", "dekor-2"];
+export const OBJEK_TATA = ["kompor", "kulkas", "meja-atas", "rak-bumbu"];
 /** Peralatan tetap yang membuka opsi interaksi saat diklik. */
 const OBJEK_AKSI_LANGSUNG = new Set([
-  "stasiun-ukur", "rak-bumbu", "saklar-lampu", "lampu-meja", "wastafel",
-  "hood", "talenan", "ventilasi", "rak-bawah", "papan-skor",
+  "stasiun-ukur", "saklar-lampu", "lampu-meja", "wastafel", "hood",
+  "talenan", "ventilasi", "rak-bawah", "papan-skor", "kompor", "kulkas", "rak-bumbu",
 ]);
 const NAMA_TATA: Record<string, string> = {
   kompor: "Kompor",
   kulkas: "Kulkas",
   "meja-atas": "Pulau meja potong",
-  "dekor-1": "Model tambahan 1",
-  "dekor-2": "Model tambahan 2",
+  "rak-bumbu": "Rak bumbu",
 };
 
 /** Hitbox anak meja tetap memilih seluruh meja saat Mode Tata Letak. */
@@ -260,6 +259,9 @@ export class PengendaliDapur {
 
     if (st.menuBuka || st.bantuanBuka || st.modelBuka) return;
 
+    // Fase memasak hanya menerima interaksi objek melalui klik / VR dwell.
+    if (st.fase === "masak") return;
+
     if (e.code === "KeyQ" && !e.repeat) this.putarObjek(-1);
     if (e.code === "KeyE" && !e.repeat) this.putarObjek(1);
     if (e.code === "KeyR" && !e.repeat) this.ubahTinggiObjek(1);
@@ -339,18 +341,20 @@ export class PengendaliDapur {
     toko.setStatus({ target: targetId });
 
     // Klik pertama pada barang yang dapat dipindah = ambil barang.
-    if (id && OBJEK_TATA.includes(id) && targetId !== "talenan") {
+    if (st.fase === "tata" && id && OBJEK_TATA.includes(id) && targetId !== "talenan") {
+      if (!toko.keadaan.params.sudahKalibrasi) {
+        toko.toast("Ukur tinggi badan terlebih dahulu di stasiun pengukur.", "cukup");
+        return;
+      }
       toko.setStatus({ modeTata: true, dipegang: id, target: id, modeInteraksi: false, objekInteraksiAktif: null });
       const cv = this.scene?.canvas;
       try { cv?.requestPointerLock?.(); } catch {}
       audio.geser();
       toko.toast(`${NAMA_TATA[id]} diambil — gerakkan dengan mouse, klik untuk meletakkan.`, "info");
-    } else if (OBJEK_AKSI_LANGSUNG.has(targetId) && !st.modeInteraksi && !st.menuBuka && !st.bantuanBuka && !st.modelBuka) {
-      // Benda tetap memakai panel opsinya; tidak diperlakukan sebagai barang
-      // yang dapat dipindahkan.
-      toko.masukInteraksi(targetId);
-      document.exitPointerLock?.();
-      audio.klik();
+    } else if (st.fase === "tata" && targetId === "stasiun-ukur") {
+      this.aksiUtama(targetId);
+    } else if (st.fase === "masak" && OBJEK_AKSI_LANGSUNG.has(targetId) && !st.menuBuka && !st.bantuanBuka && !st.modelBuka) {
+      this.aksiUtama(targetId);
     }
   };
 
@@ -360,7 +364,7 @@ export class PengendaliDapur {
     const id = idPaksa || k.status.target;
 
     // --- Mode Tata Letak: dipakai oleh klik / VR ---
-    if (k.status.modeTata) {
+    if (k.status.modeTata && id !== "stasiun-ukur") {
       if (k.status.dipegang) {
         toko.setStatus({ dipegang: null });
         audio.klik();
@@ -368,20 +372,20 @@ export class PengendaliDapur {
       } else {
         const objekTata = objekTataDariTarget(id);
         if (objekTata && OBJEK_TATA.includes(objekTata)) {
-          toko.setStatus({ dipegang: objekTata, target: objekTata });
+          toko.setStatus({ modeTata: true, dipegang: objekTata, target: objekTata });
           audio.geser();
           toko.toast(
             `${NAMA_TATA[objekTata]} diambil — gerakkan dengan mouse, Q/E putar, R/T tinggi-rendah, lalu klik untuk meletakkan.`,
             "info"
           );
         } else {
-          toko.toast("Objek ini tidak dapat dipindahkan. Coba kompor, kulkas, pulau meja, atau slot dekorasi.", "cukup");
+          toko.toast("Objek ini tetap. Pindahkan meja potong, kulkas, kompor, atau rak bumbu.", "cukup");
         }
       }
       return;
     }
 
-    if (!id) return;
+    if (!id || (k.status.fase !== "masak" && id !== "stasiun-ukur")) return;
     const p = k.params;
     switch (id) {
       case "stasiun-ukur": {
@@ -398,7 +402,23 @@ export class PengendaliDapur {
         );
         break;
       }
+      case "kulkas": {
+        if (!p.bahanDibawa) {
+          toko.setParams({ kulkasTerbuka: true, bahanDibawa: true, kulkasBukaJalurBebas: lebarLorong(p) >= 0.9 });
+          toko.toast("Bahan diambil dari kulkas. Bawa ke wastafel untuk dicuci.", "baik");
+          audio.klik();
+        } else {
+          toko.setParams({ kulkasTerbuka: !p.kulkasTerbuka });
+          audio.beralih();
+        }
+        break;
+      }
       case "kompor": {
+        if (!p.tomatDipotong) {
+          toko.toast("Potong bahan terlebih dahulu sebelum menyalakan kompor.", "cukup");
+          audio.gagal();
+          break;
+        }
         const nyala = !p.komporNyala;
         const sirkulasiAktif = p.ventilasiBuka || p.hoodNyala;
         const patch: any = { komporNyala: nyala };
@@ -420,11 +440,21 @@ export class PengendaliDapur {
       }
       case "meja-potong":
       case "lampu-meja": {
-        toko.setParams({ lampuMeja: !p.lampuMeja });
+        toko.setParams({ lampuMeja: true, lampuMejaFokus: true });
         audio.beralih();
         break;
       }
       case "rak-bumbu": {
+        if (!p.komporNyala) {
+          toko.toast("Ambil bumbu setelah kompor menyala agar urutan kerja tercatat.", "cukup");
+          break;
+        }
+        toko.setParams({ bumbuAmbilBaik: true, bumbuDiambil: true }, true);
+        toko.toast("Bumbu diambil dan siap dimasukkan ke masakan.", "baik");
+        audio.sukses();
+        break;
+      }
+      case "rak-bumbu-lama": {
         const t = p.rakTinggi;
         const dx = jarakRakKompor(p);
         if (t >= 90 && t <= 150) {
@@ -454,31 +484,16 @@ export class PengendaliDapur {
         }
         break;
       }
-      case "kulkas": {
-        const buka = !p.kulkasTerbuka;
-        const lorong = lebarLorong(p);
-        const patch: any = { kulkasTerbuka: buka };
-        if (buka && lorong >= 0.9 && !p.kulkasBukaJalurBebas) patch.kulkasBukaJalurBebas = true;
-        toko.setParams(patch);
-        audio.beralih();
-        if (buka && lorong >= 0.9)
-          toko.toast(
-            `Pintu kulkas terbuka penuh dan jalur tetap lega (${(lorong * 100).toFixed(0)} cm) — penempatan ergonomis.`,
-            "baik"
-          );
-        else if (buka)
-          toko.toast(
-            `Pintu kulkas memakan jalur — lorong tersisa hanya ${(lorong * 100).toFixed(0)} cm dari minimal 90 cm.`,
-            "buruk"
-          );
-        break;
-      }
       case "saklar-lampu": {
         toko.setParams({ lampuUmum: !p.lampuUmum });
         audio.beralih();
         break;
       }
       case "wastafel": {
+        if (!p.bahanDibawa) {
+          toko.toast("Ambil bahan dari kulkas terlebih dahulu.", "cukup");
+          break;
+        }
         const alir = !p.keranNyala;
         // Membuka keran = mengambil bahan segar lalu mencucinya.
         // Bahan yang sudah dicuci siap dipotong (urutan kerja higienis).
@@ -498,6 +513,10 @@ export class PengendaliDapur {
       }
       case "hood": {
         const nyala = !p.hoodNyala;
+        if (nyala && !p.komporNyala) {
+          toko.toast("Nyalakan kompor terlebih dahulu sebelum menyalakan hood.", "info");
+          break;
+        }
         toko.setParams({ hoodNyala: nyala });
         audio.beralih();
         if (nyala)
@@ -505,6 +524,19 @@ export class PengendaliDapur {
         break;
       }
       case "talenan": {
+        if (!p.bahanDicuci) {
+          toko.toast("Cuci bahan di wastafel terlebih dahulu.", "cukup");
+          break;
+        }
+        if (!p.bahanDitaruh) {
+          toko.setParams({ bahanDitaruh: true });
+          toko.toast("Bahan diletakkan di meja potong. Atur penerangan sebelum memotong.", "info");
+          break;
+        }
+        if (!p.lampuMeja || !p.lampuMejaFokus) {
+          toko.toast("Atur penerangan meja potong terlebih dahulu.", "cukup");
+          break;
+        }
         const ukuranTubuh = antropometri(p);
         const posturBaik = p.mejaTinggi >= ukuranTubuh.idealBawah && p.mejaTinggi <= ukuranTubuh.idealAtas;
         const patch: any = { tomatDipotong: true };
@@ -648,6 +680,7 @@ export class PengendaliDapur {
     const bidangY =
       st.dipegang === "kompor" ? p.komporTinggi / 100 :
       st.dipegang === "kulkas" ? p.kulkasTinggi / 100 :
+      st.dipegang === "rak-bumbu" ? p.rakTinggi / 100 :
       st.dipegang === "dekor-1" ? p.dekor1Tinggi / 100 :
       st.dipegang === "dekor-2" ? p.dekor2Tinggi / 100 : 0;
     this.bidangTata.constant = -bidangY;
@@ -692,6 +725,11 @@ export class PengendaliDapur {
         patch.mejaZ = jepit(z, B.meja.zMin, B.meja.zMax);
         break;
       }
+      case "rak-bumbu": {
+        patch.rakGeserX = jepit(Math.round((x - 0.45) * 100), -60, 10);
+        patch.rakTinggi = jepit(Math.round(bidangY * 100), 60, 190);
+        break;
+      }
       case "dekor-1": {
         patch.dekor1X = jepit(x, -2.2, 2.2);
         patch.dekor1Z = jepit(z, -2.1, 2.1);
@@ -711,11 +749,11 @@ export class PengendaliDapur {
     // Pratinjau lokasi penempatan
     if (el.hantu) {
       el.hantu.setAttribute("visible", true);
-      const px = patch.komporX ?? patch.mejaX ?? patch.dekor1X ?? patch.dekor2X ?? (patch.kulkasGeser !== undefined ? 1.45 - patch.kulkasGeser / 100 : x);
+      const px = patch.komporX ?? patch.mejaX ?? (patch.rakGeserX !== undefined ? 0.45 + patch.rakGeserX / 100 : patch.dekor1X ?? patch.dekor2X ?? (patch.kulkasGeser !== undefined ? 1.45 - patch.kulkasGeser / 100 : x));
       const pz =
         patch.komporJarak !== undefined
           ? -2.05 + patch.komporJarak / 100
-          : patch.mejaZ ?? patch.kulkasZ ?? patch.dekor1Z ?? patch.dekor2Z ?? z;
+          : patch.mejaZ ?? patch.kulkasZ ?? patch.dekor1Z ?? patch.dekor2Z ?? (patch.rakTinggi !== undefined ? -2.14 : z);
       el.hantu.setAttribute("position", v3(px, 0.02, pz));
     }
 
@@ -727,6 +765,7 @@ export class PengendaliDapur {
         kompor: [0.82, 0.78, 0.58, p.komporTinggi / 100],
         kulkas: [0.78, 1.75, 0.72, p.kulkasTinggi / 100],
         "meja-atas": [1.28, p.mejaTinggi / 100, 0.7, 0],
+        "rak-bumbu": [0.84, 0.42, 0.2, p.rakTinggi / 100],
         "dekor-1": [0.58, 0.9, 0.58, p.dekor1Tinggi / 100],
         "dekor-2": [0.58, 0.9, 0.58, p.dekor2Tinggi / 100],
       };
@@ -735,6 +774,7 @@ export class PengendaliDapur {
         kompor: p.rotKompor,
         kulkas: p.rotKulkas,
         "meja-atas": p.rotMeja,
+        "rak-bumbu": 0,
         "dekor-1": p.dekor1Rot,
         "dekor-2": p.dekor2Rot,
       };
@@ -846,9 +886,6 @@ export class PengendaliDapur {
       const sUap = p.komporApiLevel === "tinggi" ? 1.4 : p.komporApiLevel === "sedang" ? 1.0 : 0.6;
       el.uap?.setAttribute("scale", v3(sUap, sUap, sUap));
     }
-
-    // Hood & cerobong mengikuti kompor
-    el.hoodGrup?.setAttribute("position", v3(v.komporX + 1.3, 0, 0));
 
     // Meja potong: tinggi + posisi bebas
     v.mejaH = REDAM(v.mejaH, p.mejaTinggi / 100, 8, dt);

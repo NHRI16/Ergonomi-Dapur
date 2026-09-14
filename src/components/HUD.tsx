@@ -35,7 +35,6 @@ import {
 import {
   gunakanToko,
   toko,
-  teksPrompt,
   warnaSkor,
   labelSkor,
   warnaTingkat,
@@ -47,22 +46,6 @@ import PanelModul from "./PanelModul";
 
 const IKON_PILAR = { keselamatan: ShieldCheck, efisiensi: Zap, kesehatan: HeartPulse, kenyamanan: Armchair } as const;
 const NAMA_PILAR = { keselamatan: "Keselamatan", efisiensi: "Efisiensi", kesehatan: "Kesehatan", kenyamanan: "Kenyamanan" } as const;
-
-const IKON_TARGET: Record<string, any> = {
-  kompor: Flame,
-  "meja-potong": ChefHat,
-  "stasiun-ukur": Ruler,
-  talenan: UtensilsCrossed,
-  "rak-bumbu": CookingPot,
-  kulkas: Refrigerator,
-  "saklar-lampu": Lightbulb,
-  "lampu-meja": Lightbulb,
-  ventilasi: Wind,
-  wastafel: Droplets,
-  hood: Fan,
-  "rak-bawah": CookingPot,
-  "papan-skor": Activity,
-};
 
 const CHIP_TINGKAT: Record<string, string> = {
   buruk: "SEGERA",
@@ -99,8 +82,6 @@ export default function HUD() {
   if (!k.status.dimulai) return null;
 
   const { status, params, pengaturan } = k;
-  const prompt = teksPrompt(status.target, params, status.sikap);
-  const IkonTarget = status.target ? IKON_TARGET[status.target] || Activity : null;
   const warna = warnaSkor(k.skor);
   const keliling = 2 * Math.PI * 31;
   const uiTerbuka = status.menuBuka || status.bantuanBuka || status.modeInteraksi;
@@ -171,6 +152,10 @@ export default function HUD() {
                 {k.masalah.length ? `${k.masalah.length} temuan aktif` : "Tanpa temuan"}
               </span>
             </div>
+            <div className="mt-2 grid grid-cols-2 gap-1 text-[9px] font-semibold text-krem-100/55">
+              <span>Penataan 70%: {k.skorPenataan}</span>
+              <span>Memasak 30%: {k.skorMemasak}</span>
+            </div>
           </div>
         </div>
 
@@ -223,17 +208,6 @@ export default function HUD() {
             title="Bisukan / aktifkan suara (M)"
           >
             {pengaturan.bisu ? <VolumeX size={15.5} /> : <Volume2 size={15.5} />}
-          </button>
-          <div className="h-4 w-px bg-white/10" />
-          <button
-            onClick={() => {
-              toko.setStatus({ modeTata: !status.modeTata, dipegang: null });
-              audio.beralih();
-            }}
-            className={`flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-white/10 ${status.modeTata ? "text-emerald-300" : "text-krem-100/75 hover:text-amber-300"}`}
-            title="Mode Tata Letak — pindahkan barang (B)"
-          >
-            <Move size={15.5} />
           </button>
           <div className="h-4 w-px bg-white/10" />
           <button
@@ -339,28 +313,6 @@ export default function HUD() {
       {/* ---------- Panel kurikulum modul (kiri bawah) ---------- */}
       <PanelModul />
 
-      {/* ---------- Bantuan kontrol (bawah, di atas panel modul) ---------- */}
-      <div className="kaca absolute bottom-[76px] right-4 hidden w-[240px] animate-masuk-atas flex-wrap items-center gap-x-2.5 gap-y-1.5 rounded-xl px-3 py-2.5 opacity-75 transition hover:opacity-100 lg:flex">
-        {[
-          ["W A S D", "bergerak"],
-          ["Mouse", "melihat"],
-          ["Klik", "ambil / letakkan"],
-          ["C", "jongkok"],
-          ["Shift", "berdiri tegak"],
-          ["[ ]", "atur / geser"],
-          ["G", "geser rak mendatar"],
-          ["Q E", "putar objek"],
-          ["R T", "tinggi / rendah"],
-          ["K", "model 3D"],
-          ["U", "sembunyikan UI"],
-          ["Esc", "buka pengaturan"],
-        ].map(([kunci, label]) => (
-          <span key={kunci} className="flex items-center gap-1.5 text-[9.5px] text-krem-100/60">
-            <span className="keycap">{kunci}</span> {label}
-          </span>
-        ))}
-      </div>
-
       {/* ---------- Indikator Mode Tata Letak ---------- */}
       {status.modeTata && !uiTerbuka && (
         <div className="absolute left-1/2 top-[76px] -translate-x-1/2 animate-masuk-atas">
@@ -410,30 +362,6 @@ export default function HUD() {
         </div>
       )}
 
-      {/* ---------- Prompt interaksi ---------- */}
-      {prompt && !uiTerbuka && (
-        <div key={status.target} className="absolute bottom-7 left-1/2 w-max max-w-[92vw] -translate-x-1/2 animate-masuk-atas">
-          <div className="kaca flex items-center gap-4 rounded-2xl px-4 py-3">
-            {IkonTarget && (
-              <div className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10">
-                <IkonTarget size={19} className="text-amber-300" />
-                <span className="absolute inset-0 animate-nadi-lembut rounded-xl border border-amber-400/20" />
-              </div>
-            )}
-            <div className="min-w-0">
-              <div className="teks-display text-[13px] font-extrabold tracking-wide text-krem-50">{prompt.nama}</div>
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-                {prompt.aksi.map((a) => (
-                  <span key={a.kunci} className="flex items-center gap-1.5">
-                    <span className="keycap">{a.kunci}</span>
-                    <span className="text-[10.5px] font-medium text-krem-100/75">{a.label}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ---------- Petunjuk kunci kursor ---------- */}
       {!uiTerbuka && !status.kursorTerkunci && !status.dalamVR && (
