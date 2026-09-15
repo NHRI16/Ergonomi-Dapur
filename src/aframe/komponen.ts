@@ -695,9 +695,9 @@ export function pastikanKomponen() {
           this.el.object3D.position.y += -kb.min.y;
           this.el.object3D.position.x += -tengah.x;
           this.el.object3D.position.z += -tengah.z;
-          // Geser +0.5m ke arah dapur (dinding belakang GLB ≈-2.44m, 0.55m di
-          // belakang kabinet z≈-1.89m — proporsional dengan tata letak dapur)
-          this.el.object3D.position.z += 0.5;
+          // Geser +1.3m ke arah dapur agar dinding belakang GLB selaras
+          // dengan tata letak dapur primitif (kabinet z≈-1.89, backsplash z≈-2.243).
+          this.el.object3D.position.z += 1.3;
         }
 
         // --- 2. Filter: whitelist struktur vs blacklist furniture ---

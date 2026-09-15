@@ -7,5 +7,23 @@
   },
   "kulkas": {
     "jalur": "/models/coca_cola_refrigerator_1.glb"
+  },
+  "hood": {
+    "jalur": ""
+  },
+  "rak-bawah": {
+    "jalur": ""
+  },
+  "wastafel": {
+    "jalur": ""
+  },
+  "lampu-meja": {
+    "jalur": ""
+  },
+  "stasiun-ukur": {
+    "jalur": ""
+  },
+  "kompor": {
+    "jalur": ""
   }
 }
