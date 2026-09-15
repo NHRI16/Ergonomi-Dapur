@@ -9,6 +9,7 @@
     "sembunyikanPrimitif": true
   },
   "kulkas": {
+<<<<<<< HEAD
     "jalur": "/models/coca_cola_refrigerator.glb",
     "skala": 1,
     "putarY": 180,
@@ -21,11 +22,21 @@
     "putarY": 0,
     "offsetY": 0,
     "sembunyikanPrimitif": true
+=======
+    "jalur": "/models/coca_cola_refrigerator_1.glb"
+>>>>>>> 87843417daf1039d5aba1e616eea14d885dcd774
   },
   "hood": {
     "jalur": ""
   },
+<<<<<<< HEAD
   "kompor": {
+=======
+  "rak-bawah": {
+    "jalur": ""
+  },
+  "wastafel": {
+>>>>>>> 87843417daf1039d5aba1e616eea14d885dcd774
     "jalur": ""
   },
   "lampu-meja": {
@@ -33,5 +44,11 @@
   },
   "stasiun-ukur": {
     "jalur": ""
+<<<<<<< HEAD
+=======
+  },
+  "kompor": {
+    "jalur": ""
+>>>>>>> 87843417daf1039d5aba1e616eea14d885dcd774
   }
 }

@@ -29,6 +29,25 @@ function botolBumbu(): string {
   return out;
 }
 
+<<<<<<< HEAD
+=======
+/** Pintu-pintu kabinet bawah. */
+function pintuKabinet(): string {
+  // x=-1.36 dihapus: area ini terbuka (tanpa pintu) untuk menampilkan
+  // rak penyimpanan di bawah kompor. Kompor di x=-1.3 → open cabinet section.
+  const xs = [-2.0, -0.72, -0.08];
+  return xs
+    .map(
+      (x) => `
+    <a-entity geometry="primitive: box; width: 0.58; height: 0.62; depth: 0.02" position="${x} 0.47 -1.572"
+      material="src: #tx-kayu; color: #e8caa2; roughness: 0.55" ${TERIMA}></a-entity>
+    <a-entity geometry="primitive: cylinder; radius: 0.011; height: 0.15" position="${x} 0.73 -1.545" rotation="0 0 90"
+      material="color: #d9c9a8; metalness: 0.85; roughness: 0.25"></a-entity>`
+    )
+    .join("");
+}
+
+>>>>>>> 87843417daf1039d5aba1e616eea14d885dcd774
 /** Daun-daun tanaman hias. */
 function tanaman(): string {
   let out = "";
@@ -97,28 +116,152 @@ export function bangunMarkahDapur(): string {
   <a-entity geometry="primitive: plane; width: 1.34; height: 0.86" rotation="-90 0 0" position="0.35 0.013 1.0" material="color: #c9704f; roughness: 1"></a-entity>
   <a-entity geometry="primitive: plane; width: 1.0; height: 0.55" rotation="-90 0 0" position="0.35 0.014 1.0" material="color: #d98d63; roughness: 1"></a-entity>
 
+<<<<<<< HEAD
   <a-entity id="kompor" slot-model="slot: kompor" position="-1.3 0 -1.95"></a-entity>
+=======
+  <!-- ================= KABINET & MEJA KERJA BELAKANG ================= -->
+  <a-entity geometry="primitive: box; width: 3.25; height: 0.84; depth: 0.62" position="-0.675 0.42 -1.89"
+    material="src: #tx-kayu; repeat: 2.4 1; roughness: 0.6; color: #c99a68" ${BAYANGAN}></a-entity>
+  <a-entity geometry="primitive: box; width: 3.21; height: 0.08; depth: 0.56" position="-0.675 0.04 -1.87" material="color: #3a2f26; roughness: 0.9"></a-entity>
+  <a-entity geometry="primitive: box; width: 3.3; height: 0.05; depth: 0.68" position="-0.675 0.865 -1.88"
+    material="src: #tx-marmer; repeat: 2.2 0.9; roughness: 0.22; metalness: 0.05" ${BAYANGAN}></a-entity>
+  ${pintuKabinet()}
+  <!-- backsplash -->
+  <a-entity geometry="primitive: plane; width: 3.25; height: 0.62" position="-0.675 1.21 -2.243"
+    material="src: #tx-backsplash; repeat: 3 0.6; roughness: 0.15; metalness: 0.02" ${TERIMA}></a-entity>
+  <!-- strip LED bawah kabinet -->
+  <a-entity id="strip-led-1" geometry="primitive: box; width: 0.74; height: 0.014; depth: 0.03" position="-1.9 1.538 -1.93"
+    material="color: #7a6a52; emissive: #ffd9a0; emissiveIntensity: 0.9"></a-entity>
+  <a-entity id="strip-led-2" geometry="primitive: box; width: 0.74; height: 0.014; depth: 0.03" position="-1.06 1.538 -1.93"
+    material="color: #7a6a52; emissive: #ffd9a0; emissiveIntensity: 0.9"></a-entity>
+  <a-entity id="cahaya-strip" light="type: point; color: #ffd9a0; intensity: 0.4; distance: 2.4" position="-1.45 1.45 -1.55"></a-entity>
 
-  <!-- hood (dibungkus grup agar mengikuti kompor) -->
-  <a-entity id="hood-grup" position="0 0 0" slot-model="slot: hood">
-  <a-entity geometry="primitive: box; width: 0.7; height: 0.32; depth: 0.45" position="-1.3 2.16 -1.95"
-    material="color: #ccd1d8; metalness: 0.85; roughness: 0.28" ${BAYANGAN}></a-entity>
-  <a-entity geometry="primitive: box; width: 0.3; height: 0.72; depth: 0.28" position="-1.3 2.62 -1.98" material="color: #b8bec6; metalness: 0.85; roughness: 0.3"></a-entity>
-  <a-entity geometry="primitive: box; width: 0.6; height: 0.02; depth: 0.4" position="-1.3 1.91 -1.95" material="color: #d8dde2; emissive: #ffe9c4; emissiveIntensity: 0.35"></a-entity>
-  <!-- kipas hood (berputar saat menyala) -->
-  <a-entity id="kipas-hood" position="-1.3 1.915 -1.95">
-    <a-entity geometry="primitive: box; width: 0.26; height: 0.008; depth: 0.035" material="color: #5b6470; metalness: 0.6; roughness: 0.4"></a-entity>
-    <a-entity geometry="primitive: box; width: 0.26; height: 0.008; depth: 0.035" rotation="0 60 0" material="color: #5b6470; metalness: 0.6; roughness: 0.4"></a-entity>
-    <a-entity geometry="primitive: box; width: 0.26; height: 0.008; depth: 0.035" rotation="0 120 0" material="color: #5b6470; metalness: 0.6; roughness: 0.4"></a-entity>
+
+
+  <!-- handuk -->
+  <a-entity geometry="primitive: plane; width: 0.15; height: 0.24" position="-1.66 0.6 -1.555" rotation="0 0 4" material="color: #e9dfcc; roughness: 1; side: double"></a-entity>
+  <a-entity geometry="primitive: plane; width: 0.15; height: 0.05" position="-1.66 0.565 -1.551" rotation="0 0 4" material="color: #c96f4a; roughness: 1; side: double"></a-entity>
+
+  <!-- mangkuk buah -->
+  <a-entity geometry="primitive: sphere; radius: 0.12" scale="1 0.42 1" position="0.32 0.905 -1.95" material="color: #e8e2d6; roughness: 0.4" ${BAYANGAN}></a-entity>
+  <a-entity geometry="primitive: sphere; radius: 0.045" position="0.27 0.94 -1.92" material="color: #e8963c; roughness: 0.45"></a-entity>
+  <a-entity geometry="primitive: sphere; radius: 0.045" position="0.37 0.94 -1.98" material="color: #e8963c; roughness: 0.45"></a-entity>
+  <a-entity geometry="primitive: sphere; radius: 0.042" position="0.33 0.96 -1.94" material="color: #9db45c; roughness: 0.45"></a-entity>
+
+  <!-- ================= KOMPOR (INTERAKTIF) ================= -->
+  <a-entity id="kompor" class="interaktif"slot-model="slot: kompor" position="-1.3 0 -1.95">
+    <a-entity geometry="primitive: box; width: 0.62; height: 0.045; depth: 0.52" position="0 0.895 0"
+      material="color: #14161a; roughness: 0.18; metalness: 0.65" ${BAYANGAN}></a-entity>
+    <a-entity geometry="primitive: torus; radius: 0.068; radiusTubular: 0.009" rotation="-90 0 0" position="-0.13 0.92 -0.11" material="color: #2a2d31; metalness: 0.7; roughness: 0.4"></a-entity>
+    <a-entity geometry="primitive: torus; radius: 0.068; radiusTubular: 0.009" rotation="-90 0 0" position="0.13 0.92 -0.11" material="color: #2a2d31; metalness: 0.7; roughness: 0.4"></a-entity>
+    <a-entity geometry="primitive: torus; radius: 0.068; radiusTubular: 0.009" rotation="-90 0 0" position="-0.13 0.92 0.11" material="color: #2a2d31; metalness: 0.7; roughness: 0.4"></a-entity>
+    <a-entity geometry="primitive: torus; radius: 0.068; radiusTubular: 0.009" rotation="-90 0 0" position="0.13 0.92 0.11" material="color: #2a2d31; metalness: 0.7; roughness: 0.4"></a-entity>
+    <a-entity geometry="primitive: cylinder; radius: 0.018; height: 0.02" rotation="90 0 0" position="-0.1 0.895 0.25" material="color: #c9ced4; metalness: 0.9; roughness: 0.2"></a-entity>
+    <a-entity geometry="primitive: cylinder; radius: 0.018; height: 0.02" rotation="90 0 0" position="0.1 0.895 0.25" material="color: #c9ced4; metalness: 0.9; roughness: 0.2"></a-entity>
+    <!-- panci di atas kompor (dapat digeser posisi tengah / tepi, atau diangkat) -->
+    <a-entity id="grup-panci" class="tetap-tampil" position="-0.13 0 -0.11">
+      <a-entity id="panci-mesh" geometry="primitive: cylinder; radius: 0.13; height: 0.14" position="0 0.99 0"
+        material="color: #9fa8b2; metalness: 0.9; roughness: 0.32" ${BAYANGAN}></a-entity>
+      <a-entity geometry="primitive: torus; radius: 0.11; radiusTubular: 0.012" rotation="-90 0 0" position="0 1.065 0" material="color: #878f99; metalness: 0.9; roughness: 0.3"></a-entity>
+      <a-entity geometry="primitive: sphere; radius: 0.022" position="0 1.075 0" material="color: #2f3338; roughness: 0.5"></a-entity>
+    </a-entity>
+    <!-- api kompor (intensitas & visual adaptif mati, rendah, sedang, tinggi) -->
+    <a-entity id="api-kompor" class="tetap-tampil" api-kompor position="-0.13 0.925 -0.11" visible="false">
+      <!-- api biru inti (efisiensi tinggi) -->
+      <a-entity id="api-biru" geometry="primitive: cone; radiusBottom: 0.05; radiusTop: 0.005; height: 0.07" position="0 0.035 0"
+        material="color: #60a5fa; emissive: #3b82f6; emissiveIntensity: 2.5; transparent: true; opacity: 0.9; depthWrite: false"></a-entity>
+      <!-- api oranye berkobar (intensitas tinggi) -->
+      <a-entity id="api-oranye" geometry="primitive: cone; radiusBottom: 0.055; radiusTop: 0.007; height: 0.12" position="0.005 0.06 0.003"
+        material="color: #ff9d2e; emissive: #ff7a00; emissiveIntensity: 2.2; transparent: true; opacity: 0.92; depthWrite: false"></a-entity>
+      <a-entity id="api-kuning" geometry="primitive: cone; radiusBottom: 0.035; radiusTop: 0.004; height: 0.15" position="-0.008 0.075 -0.004"
+        material="color: #ffd54f; emissive: #ffb300; emissiveIntensity: 2.4; transparent: true; opacity: 0.9; depthWrite: false"></a-entity>
+      <a-entity id="cahaya-api" light="type: point; color: #ff8c3b; intensity: 0; distance: 2.2" position="0 0.28 0"></a-entity>
+    </a-entity>
+    <!-- uap panci -->
+    <a-entity id="uap" class="tetap-tampil" uap-panci position="-0.13 1.1 -0.11" visible="false">
+      <a-entity geometry="primitive: plane; width: 0.1; height: 0.13" material="color: #ffffff; transparent: true; opacity: 0.0; depthWrite: false; side: double"></a-entity>
+      <a-entity geometry="primitive: plane; width: 0.08; height: 0.11" material="color: #ffffff; transparent: true; opacity: 0.0; depthWrite: false; side: double"></a-entity>
+      <a-entity geometry="primitive: plane; width: 0.12; height: 0.15" material="color: #ffffff; transparent: true; opacity: 0.0; depthWrite: false; side: double"></a-entity>
+    </a-entity>
   </a-entity>
-  <a-entity id="led-hood" geometry="primitive: sphere; radius: 0.012" position="-1.05 2.02 -1.73"
+>>>>>>> 87843417daf1039d5aba1e616eea14d885dcd774
+
+  <!-- ================= HOOD CEROBONG (di atas kompor) ================= -->
+  <!-- Kompor di x=-1.3, z=-1.95. Hood harus sejajar TEPAT di atasnya.             -->
+  <!-- Clearance 70cm: kompor surface y≈0.917 + 0.70 = 1.617 → panel bawah y=1.617 -->
+  <a-entity id="hood-grup" position="0 0 0" slot-model="slot: hood">
+  <!-- Panel bawah + lampu hood (CENTER tepat di atas kompor: x=-1.3, z=-1.95) -->
+  <a-entity geometry="primitive: box; width: 0.68; height: 0.025; depth: 0.54" position="-1.3 1.617 -1.95"
+    material="color: #d8dde2; emissive: #ffe9c4; emissiveIntensity: 0.45"></a-entity>
+  <!-- Kipas hood (berputar saat menyala, center panel) -->
+  <a-entity id="kipas-hood" position="-1.3 1.640 -1.95">
+    <a-entity geometry="primitive: box; width: 0.30; height: 0.008; depth: 0.040" material="color: #5b6470; metalness: 0.6; roughness: 0.4"></a-entity>
+    <a-entity geometry="primitive: box; width: 0.30; height: 0.008; depth: 0.040" rotation="0 60 0" material="color: #5b6470; metalness: 0.6; roughness: 0.4"></a-entity>
+    <a-entity geometry="primitive: box; width: 0.30; height: 0.008; depth: 0.040" rotation="0 120 0" material="color: #5b6470; metalness: 0.6; roughness: 0.4"></a-entity>
+  </a-entity>
+  <!-- Badan hood utama: 7cm lebih lebar dari kompor (0.69 vs 0.62) —— proporsional -->
+  <a-entity geometry="primitive: box; width: 0.72; height: 0.28; depth: 0.54" position="-1.3 1.757 -1.95"
+    material="color: #ccd1d8; metalness: 0.85; roughness: 0.28" ${BAYANGAN}></a-entity>
+  <!-- Bagian atas hood menyempit ke cerobong -->
+  <a-entity geometry="primitive: box; width: 0.48; height: 0.18; depth: 0.38" position="-1.3 1.987 -1.96"
+    material="color: #b8bec6; metalness: 0.85; roughness: 0.30"></a-entity>
+  <!-- Cerobong vertikal: dari top hood (y=2.077) lurus ke plafon (y=3.0) -->
+  <a-entity geometry="primitive: box; width: 0.30; height: 0.886; depth: 0.28" position="-1.3 2.534 -1.97"
+    material="color: #a8aeb6; metalness: 0.82; roughness: 0.32"></a-entity>
+  <!-- Plat sambungan ke plafon -->
+  <a-entity geometry="primitive: box; width: 0.36; height: 0.03; depth: 0.32" position="-1.3 2.985 -1.97"
+    material="color: #9ea4ac; metalness: 0.70; roughness: 0.40"></a-entity>
+  <!-- LED indikator (sisi kanan depan hood) -->
+  <a-entity id="led-hood" geometry="primitive: sphere; radius: 0.012" position="-1.02 1.68 -1.70"
     material="color: #3a3f45; emissiveIntensity: 0; emissive: #34d399"></a-entity>
-  <a-entity id="hood" class="interaktif" geometry="primitive: box; width: 0.75; height: 0.45; depth: 0.55" position="-1.3 2.1 -1.9"
+  <!-- Zona interaktif hood (transparan, untuk raycasting) -->
+  <a-entity id="hood" class="interaktif" geometry="primitive: box; width: 0.76; height: 0.56; depth: 0.58" position="-1.3 1.80 -1.95"
     material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
   </a-entity>
 
   <!-- ================= WASTAFEL ================= -->
+<<<<<<< HEAD
   <a-entity id="wastafel" slot-model="slot: wastafel" position="-0.1 1.05 -1.92"></a-entity>
+=======
+  <!-- Counter top y=0.89m. Sink overmount: shell top flush di y=0.89.            -->
+  <!-- Shell center y=0.80, height=0.18 → top=0.89 (pas counter) ✓              -->
+  <!-- Wastafel di x=-0.1 (antara kompor x=-1.3 dan kulkas x=1.25) z=-1.92      -->
+  <!-- Shell stainless bak -->
+  <a-entity geometry="primitive: box; width: 0.56; height: 0.18; depth: 0.44" position="-0.1 0.80 -1.92"
+    material="color: #7c848d; metalness: 0.88; roughness: 0.30"></a-entity>
+  <!-- Rongga dalam bak (basin): sedikit lebih kecil, memberi kesan cekungan -->
+  <a-entity geometry="primitive: box; width: 0.48; height: 0.14; depth: 0.37" position="-0.1 0.80 -1.92"
+    material="color: #3a4048; metalness: 0.75; roughness: 0.45"></a-entity>
+  <!-- Lubang drain di dasar bak -->
+  <a-entity geometry="primitive: cylinder; radius: 0.022; height: 0.012" position="-0.1 0.715 -1.92"
+    material="color: #2a2e33; metalness: 0.90; roughness: 0.30"></a-entity>
+  <!-- Alas keran: mount di counter dekat dinding backsplash (z=-2.12) -->
+  <a-entity geometry="primitive: cylinder; radius: 0.020; height: 0.055" position="-0.1 0.928 -2.12"
+    material="color: #cdd4da; metalness: 0.95; roughness: 0.15"></a-entity>
+  <!-- Pipa keran vertikal -->
+  <a-entity geometry="primitive: cylinder; radius: 0.012; height: 0.30" position="-0.1 1.095 -2.12"
+    material="color: #cdd4da; metalness: 0.95; roughness: 0.15"></a-entity>
+  <!-- Gooseneck / leher angsa: arc 180° dari pipa (z=-2.12) ke atas bak (z=-1.92) -->
+  <!-- Arc center z = -2.12+0.12 = -2.00, radius=0.12 → apex z=-2.00+0.12=-1.88  -->
+  <a-entity geometry="primitive: torus; radius: 0.12; radiusTubular: 0.012; arc: 180" position="-0.1 1.235 -2.00"
+    rotation="0 90 0" material="color: #cdd4da; metalness: 0.95; roughness: 0.15"></a-entity>
+  <!-- Spout: pipa turun di ujung gooseneck, di atas bak -->
+  <a-entity geometry="primitive: cylinder; radius: 0.012; height: 0.10" position="-0.1 1.185 -1.89"
+    material="color: #cdd4da; metalness: 0.95; roughness: 0.15"></a-entity>
+  <!-- Handle dingin (biru) -->
+  <a-entity geometry="primitive: box; width: 0.055; height: 0.022; depth: 0.030" position="-0.03 1.265 -2.12"
+    material="color: #3f7fae; metalness: 0.65; roughness: 0.28"></a-entity>
+  <!-- Handle panas (merah) -->
+  <a-entity geometry="primitive: box; width: 0.055; height: 0.022; depth: 0.030" position="-0.17 1.265 -2.12"
+    material="color: #ae3f3f; metalness: 0.65; roughness: 0.28"></a-entity>
+  <!-- Aliran air (muncul saat keran aktif) -->
+  <a-entity id="aliran-air" geometry="primitive: cylinder; radius: 0.012; height: 0.28" position="-0.1 1.01 -1.92"
+    material="color: #9fd4f5; transparent: true; opacity: 0.0; emissive: #7dd3fc; emissiveIntensity: 0.25" visible="false"></a-entity>
+  <!-- Zona interaktif wastafel -->
+  <a-entity id="wastafel" class="interaktif" slot-model="slot: wastafel"
+    geometry="primitive: box; width: 0.65; height: 0.52; depth: 0.52" position="-0.1 1.06 -1.92"
+    material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
+>>>>>>> 87843417daf1039d5aba1e616eea14d885dcd774
 
   <!-- ================= RAK BUMBU (INTERAKTIF) ================= -->
   <a-entity id="rak-bumbu" class="interaktif" slot-model="slot: rak-bumbu" position="0.45 1.75 -2.14">
@@ -131,6 +274,42 @@ export function bangunMarkahDapur(): string {
   <!-- penanda zona nyaman rak -->
   <a-entity geometry="primitive: plane; width: 0.02; height: 0.6" position="1.02 1.2 -2.242" material="color: #7a8b6f; transparent: true; opacity: 0.35"></a-entity>
 
+<<<<<<< HEAD
+=======
+  <!-- ================= RAK PANCI BAWAH (tepat di bawah kompor x=-1.3) ================= -->
+  <!-- Pintu kabinet di area ini sudah dihapus dari pintuKabinet() → tampilan TERBUKA.    -->
+  <!-- Interior gelap sebagai latar rak terbuka (front face sejajar counter front z=-1.58) -->
+  <a-entity geometry="primitive: box; width: 0.64; height: 0.82; depth: 0.60" position="-1.3 0.41 -1.89"
+    material="color: #120e09; roughness: 0.95"></a-entity>
+  <!-- Papan rak bawah (top y=0.283, panci duduk di atasnya) -->
+  <a-entity geometry="primitive: box; width: 0.62; height: 0.025; depth: 0.58" position="-1.3 0.270 -1.89"
+    material="src: #tx-kayu; color: #a97f52; roughness: 0.65"></a-entity>
+  <!-- Papan rak tengah (top y=0.553) -->
+  <a-entity geometry="primitive: box; width: 0.62; height: 0.025; depth: 0.58" position="-1.3 0.540 -1.89"
+    material="src: #tx-kayu; color: #a97f52; roughness: 0.65"></a-entity>
+  <!-- Panci besar di rak bawah — diposisikan ke depan agar terlihat dari front opening -->
+  <!-- Duduk di rak bawah top=0.283 → center y = 0.283+0.065 = 0.348 -->
+  <a-entity geometry="primitive: cylinder; radius: 0.145; height: 0.13" position="-1.30 0.348 -1.76"
+    material="color: #4e565f; metalness: 0.82; roughness: 0.38"></a-entity>
+  <!-- Bibir / rim panci besar -->
+  <a-entity geometry="primitive: torus; radius: 0.138; radiusTubular: 0.007" rotation="-90 0 0" position="-1.30 0.413 -1.76"
+    material="color: #6a7480; metalness: 0.85; roughness: 0.30"></a-entity>
+  <!-- Pegangan panci besar (ke kanan, menjorok depan) -->
+  <a-entity geometry="primitive: cylinder; radius: 0.012; height: 0.22" position="-1.11 0.380 -1.74" rotation="0 -25 80"
+    material="color: #2b2f34; roughness: 0.50"></a-entity>
+  <!-- Panci sedang di rak tengah -->
+  <!-- Duduk di rak tengah top=0.553 → center y = 0.553+0.05 = 0.603 -->
+  <a-entity geometry="primitive: cylinder; radius: 0.105; height: 0.10" position="-1.32 0.603 -1.76"
+    material="color: #33383e; metalness: 0.85; roughness: 0.35"></a-entity>
+  <!-- Rim panci sedang -->
+  <a-entity geometry="primitive: torus; radius: 0.098; radiusTubular: 0.006" rotation="-90 0 0" position="-1.32 0.653 -1.76"
+    material="color: #4a5158; metalness: 0.85; roughness: 0.30"></a-entity>
+  <!-- Zona interaktif rak bawah -->
+  <a-entity id="rak-bawah" class="interaktif" slot-model="slot: rak-bawah"
+    geometry="primitive: box; width: 0.66; height: 0.84; depth: 0.62" position="-1.3 0.42 -1.89"
+    material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
+
+>>>>>>> 87843417daf1039d5aba1e616eea14d885dcd774
   <!-- ================= KULKAS (INTERAKTIF) ================= -->
   <a-entity id="kulkas" class="interaktif" slot-model="slot: kulkas" position="1.25 0 -1.86">
     <a-entity geometry="primitive: box; width: 0.72; height: 1.84; depth: 0.62" position="0 0.92 0"
@@ -214,16 +393,25 @@ export function bangunMarkahDapur(): string {
   </a-entity>
 
   <!-- ================= LAMPU GANTUNG MEJA (INTERAKTIF) ================= -->
+  <!-- Ergonomi: lampu ≤70cm di atas permukaan meja. Meja top y≈0.78+0.03=0.81 → lampu bola y=1.50 -->
   <a-entity id="gantungan-lampu" position="0 0 0">
-  <a-entity geometry="primitive: cylinder; radius: 0.006; height: 1.0" position="-0.45 2.5 -0.55" material="color: #1c1f22; roughness: 0.6"></a-entity>
-    <a-entity geometry="primitive: cone; radiusBottom: 0.17; radiusTop: 0.055; height: 0.16" position="-0.45 2.02 -0.55"
+  <!-- Kabel gantungan panjang dari plafon (y=3.0) ke kepala lampu (y=1.60) -->
+  <a-entity geometry="primitive: cylinder; radius: 0.005; height: 1.38" position="-0.45 2.31 -0.55"
+    material="color: #1c1f22; roughness: 0.6"></a-entity>
+  <!-- Kap lampu (kerucut) —diperbesar agar lebih proporsional -->
+  <a-entity geometry="primitive: cone; radiusBottom: 0.22; radiusTop: 0.065; height: 0.2" position="-0.45 1.62 -0.55"
     material="color: #232629; metalness: 0.75; roughness: 0.35; side: double" ${BAYANGAN}></a-entity>
-  <a-entity id="bola-lampu" geometry="primitive: sphere; radius: 0.045" position="-0.45 1.94 -0.55"
-    material="color: #fff1cf; emissive: #ffd9a0; emissiveIntensity: 1.6"></a-entity>
-  <a-entity id="kerucut-cahaya" geometry="primitive: cone; radiusBottom: 0.5; radiusTop: 0.12; height: 1.0; openEnded: true" position="-0.45 1.42 -0.55"
+  <!-- Bola lampu -->
+  <a-entity id="bola-lampu" geometry="primitive: sphere; radius: 0.048" position="-0.45 1.52 -0.55"
+    material="color: #fff1cf; emissive: #ffd9a0; emissiveIntensity: 1.8"></a-entity>
+  <!-- Kerucut cahaya visual (terlihat saat lampu menyala) -->
+  <a-entity id="kerucut-cahaya" geometry="primitive: cone; radiusBottom: 0.55; radiusTop: 0.14; height: 1.1; openEnded: true" position="-0.45 0.97 -0.55"
     material="color: #ffe9c0; transparent: true; opacity: 0.0; side: double; depthWrite: false; emissive: #ffe9c0; emissiveIntensity: 0.25"></a-entity>
-  <a-entity id="sorot-meja" light="type: point; color: #ffd9a0; intensity: 0.9; distance: 2.4; decay: 2" position="-0.45 1.7 -0.55"></a-entity>
-  <a-entity id="lampu-meja" class="interaktif" slot-model="slot: lampu-meja" geometry="primitive: cylinder; radius: 0.2; height: 0.3" position="-0.45 1.98 -0.55"
+  <!-- Sumber cahaya pada titik bola lampu -->
+  <a-entity id="sorot-meja" light="type: point; color: #ffd9a0; intensity: 0.9; distance: 2.4; decay: 2" position="-0.45 1.4 -0.55"></a-entity>
+  <!-- Zona interaktif lampu -->
+  <a-entity id="lampu-meja" class="interaktif" slot-model="slot: lampu-meja"
+    geometry="primitive: cylinder; radius: 0.24; height: 0.32" position="-0.45 1.6 -0.55"
     material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
   </a-entity>
 
