@@ -15,6 +15,40 @@ npm run build    # membangun versi produksi ke folder dist/
 npm run preview  # menguji hasil build
 ```
 
+### Sinkronisasi model dengan teman
+
+Jalankan Vite di komputer yang menjadi server bersama:
+
+```bash
+npm run dev -- --host
+```
+
+Cari alamat IPv4 komputer server, misalnya `192.168.1.20`, lalu teman membuka
+`http://192.168.1.20:5173` dari jaringan Wi-Fi/LAN yang sama. Keduanya harus
+membuka alamat server yang sama, bukan `localhost` di masing-masing komputer.
+
+Upload model dan perubahan slot (skala, putar, tinggi, serta visibilitas bentuk
+primitif) langsung disiarkan ke semua browser yang terhubung. Berkas model hanya
+disimpan sekali di `public/models/`; upload identik tidak membuat salinan baru.
+Manifest tetap tersimpan setelah server dimatikan. Jika firewall Windows
+memblokir akses, izinkan Node.js/Vite pada jaringan Private.
+
+Saat memakai tombol K di mode development, file model baru dan
+`public/models/slot-model.json` otomatis di-stage dengan `git add`. Setelah itu
+tetap lakukan commit dan push dari VS Code:
+
+```bash
+git commit -m "Tambah model dapur"
+git push
+```
+
+Di komputer teman, jalankan `git pull` lalu restart `npm run dev`. File `.glb`
+harus terlihat sebagai file tracked, bukan `??` pada `git status`.
+
+Fitur ini menyinkronkan model dan konfigurasi runtime, bukan file source code
+`src/`. Perubahan source code tetap perlu Git, OneDrive, Syncthing, atau metode
+sinkronisasi folder lain.
+
 > **Catatan:** buka folder proyek di VS Code, lalu jalankan perintah di
 > Terminal (`Ctrl` + `` ` ``). Ekstensi yang disarankan: *ESLint*, *Tailwind CSS
 > IntelliSense*, dan *vscode-aframe* (penyorot sintaks A-Frame).

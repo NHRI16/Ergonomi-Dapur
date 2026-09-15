@@ -29,20 +29,6 @@ function botolBumbu(): string {
   return out;
 }
 
-/** Pintu-pintu kabinet bawah. */
-function pintuKabinet(): string {
-  const xs = [-2.0, -1.36, -0.72, -0.08];
-  return xs
-    .map(
-      (x) => `
-    <a-entity geometry="primitive: box; width: 0.58; height: 0.62; depth: 0.02" position="${x} 0.47 -1.572"
-      material="src: #tx-kayu; color: #e8caa2; roughness: 0.55" ${TERIMA}></a-entity>
-    <a-entity geometry="primitive: cylinder; radius: 0.011; height: 0.15" position="${x} 0.73 -1.545" rotation="0 0 90"
-      material="color: #d9c9a8; metalness: 0.85; roughness: 0.25"></a-entity>`
-    )
-    .join("");
-}
-
 /** Daun-daun tanaman hias. */
 function tanaman(): string {
   let out = "";
@@ -106,117 +92,12 @@ export function bangunMarkahDapur(): string {
     rotation="0 0 0">
   </a-entity>
 
-  <!-- ================= RUANG ================= -->
-  <a-entity geometry="primitive: plane; width: 5; height: 4.5" rotation="-90 0 0"
-    material="src: #tx-lantai; repeat: 3 2.6; roughness: 0.35; metalness: 0.04; color: #f2ede3" ${TERIMA}></a-entity>
-  <a-entity geometry="primitive: plane; width: 5; height: 4.5" rotation="90 0 0" position="0 3 0"
-    material="color: #efe9dd; roughness: 1"></a-entity>
-  <!-- Dinding primitif DISEMBUNYIKAN (visible="false") agar dinding GLB small_office_room.glb -->
-  <!-- bisa terlihat. Elemen tidak dihapus, hanya dinonaktifkan secara visual.              -->
-  <a-entity geometry="primitive: plane; width: 5; height: 3" position="0 1.5 -2.25"
-    visible="false"
-    material="src: #tx-dinding; repeat: 4 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
-  <a-entity geometry="primitive: plane; width: 5; height: 3" position="0 1.5 2.25" rotation="0 180 0"
-    visible="false"
-    material="src: #tx-dinding; repeat: 4 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
-  <a-entity geometry="primitive: plane; width: 4.5; height: 3" position="-2.5 1.5 0" rotation="0 90 0"
-    visible="false"
-    material="src: #tx-dinding; repeat: 3.6 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
-  <!-- dinding kanan (dengan lubang jendela) -->
-  <a-entity geometry="primitive: plane; width: 1.25; height: 3" position="2.5 1.5 -1.625" rotation="0 -90 0"
-    visible="false"
-    material="src: #tx-dinding; repeat: 1.4 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
-  <a-entity geometry="primitive: plane; width: 2.05; height: 3" position="2.5 1.5 1.225" rotation="0 -90 0"
-    visible="false"
-    material="src: #tx-dinding; repeat: 2.2 2.4; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
-  <a-entity geometry="primitive: plane; width: 1.2; height: 1.03" position="2.5 0.515 -0.4" rotation="0 -90 0"
-    visible="false"
-    material="src: #tx-dinding; repeat: 1.2 1; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
-  <a-entity geometry="primitive: plane; width: 1.2; height: 0.9" position="2.5 2.55 -0.4" rotation="0 -90 0"
-    visible="false"
-    material="src: #tx-dinding; repeat: 1.2 0.9; color: #f4ecdd; roughness: 0.96" ${TERIMA}></a-entity>
-  <!-- lis bawah -->
-  <a-entity geometry="primitive: box; width: 5; height: 0.09; depth: 0.02" position="0 0.045 -2.24" material="color: #ded5c4; roughness: 0.9"></a-entity>
-  <a-entity geometry="primitive: box; width: 5; height: 0.09; depth: 0.02" position="0 0.045 2.24" material="color: #ded5c4; roughness: 0.9"></a-entity>
-  <a-entity geometry="primitive: box; width: 0.02; height: 0.09; depth: 4.5" position="-2.49 0.045 0" material="color: #ded5c4; roughness: 0.9"></a-entity>
-  <a-entity geometry="primitive: box; width: 0.02; height: 0.09; depth: 4.5" position="2.49 0.045 0" material="color: #ded5c4; roughness: 0.9"></a-entity>
-
   <!-- karpet kerja -->
   <a-entity geometry="primitive: plane; width: 1.5; height: 1.0" rotation="-90 0 0" position="0.35 0.012 1.0" material="color: #b45a41; roughness: 1"></a-entity>
   <a-entity geometry="primitive: plane; width: 1.34; height: 0.86" rotation="-90 0 0" position="0.35 0.013 1.0" material="color: #c9704f; roughness: 1"></a-entity>
   <a-entity geometry="primitive: plane; width: 1.0; height: 0.55" rotation="-90 0 0" position="0.35 0.014 1.0" material="color: #d98d63; roughness: 1"></a-entity>
 
-  <!-- ================= KABINET & MEJA KERJA BELAKANG ================= -->
-  <a-entity geometry="primitive: box; width: 3.25; height: 0.84; depth: 0.62" position="-0.675 0.42 -1.89"
-    material="src: #tx-kayu; repeat: 2.4 1; roughness: 0.6; color: #c99a68" ${BAYANGAN}></a-entity>
-  <a-entity geometry="primitive: box; width: 3.21; height: 0.08; depth: 0.56" position="-0.675 0.04 -1.87" material="color: #3a2f26; roughness: 0.9"></a-entity>
-  <a-entity geometry="primitive: box; width: 3.3; height: 0.05; depth: 0.68" position="-0.675 0.865 -1.88"
-    material="src: #tx-marmer; repeat: 2.2 0.9; roughness: 0.22; metalness: 0.05" ${BAYANGAN}></a-entity>
-  ${pintuKabinet()}
-  <!-- backsplash -->
-  <a-entity geometry="primitive: plane; width: 3.25; height: 0.62" position="-0.675 1.21 -2.243"
-    material="src: #tx-backsplash; repeat: 3 0.6; roughness: 0.15; metalness: 0.02" ${TERIMA}></a-entity>
-  <!-- strip LED bawah kabinet -->
-  <a-entity id="strip-led-1" geometry="primitive: box; width: 0.74; height: 0.014; depth: 0.03" position="-1.9 1.538 -1.93"
-    material="color: #7a6a52; emissive: #ffd9a0; emissiveIntensity: 0.9"></a-entity>
-  <a-entity id="strip-led-2" geometry="primitive: box; width: 0.74; height: 0.014; depth: 0.03" position="-1.06 1.538 -1.93"
-    material="color: #7a6a52; emissive: #ffd9a0; emissiveIntensity: 0.9"></a-entity>
-  <a-entity id="cahaya-strip" light="type: point; color: #ffd9a0; intensity: 0.4; distance: 2.4" position="-1.45 1.45 -1.55"></a-entity>
-
-  <!-- rel peralatan -->
-  <a-entity geometry="primitive: cylinder; radius: 0.011; height: 0.55" position="-1.9 1.34 -2.02" rotation="0 0 90" material="color: #8f969e; metalness: 0.9; roughness: 0.25"></a-entity>
-  <a-entity geometry="primitive: torus; radius: 0.025; radiusTubular: 0.005" position="-2.05 1.3 -2.02" material="color: #8f969e; metalness: 0.9; roughness: 0.25"></a-entity>
-  <a-entity geometry="primitive: box; width: 0.045; height: 0.16; depth: 0.008" position="-2.05 1.2 -2.02" material="color: #d3d7db; metalness: 0.7; roughness: 0.35"></a-entity>
-  <a-entity geometry="primitive: torus; radius: 0.025; radiusTubular: 0.005" position="-1.8 1.3 -2.02" material="color: #8f969e; metalness: 0.9; roughness: 0.25"></a-entity>
-  <a-entity geometry="primitive: sphere; radius: 0.035" scale="1 0.6 1" position="-1.8 1.18 -2.02" material="color: #d3d7db; metalness: 0.7; roughness: 0.35"></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.006; height: 0.09" position="-1.8 1.26 -2.02" material="color: #d3d7db; metalness: 0.7; roughness: 0.35"></a-entity>
-
-  <!-- handuk -->
-  <a-entity geometry="primitive: plane; width: 0.15; height: 0.24" position="-1.66 0.6 -1.555" rotation="0 0 4" material="color: #e9dfcc; roughness: 1; side: double"></a-entity>
-  <a-entity geometry="primitive: plane; width: 0.15; height: 0.05" position="-1.66 0.565 -1.551" rotation="0 0 4" material="color: #c96f4a; roughness: 1; side: double"></a-entity>
-
-  <!-- mangkuk buah -->
-  <a-entity geometry="primitive: sphere; radius: 0.12" scale="1 0.42 1" position="0.32 0.905 -1.95" material="color: #e8e2d6; roughness: 0.4" ${BAYANGAN}></a-entity>
-  <a-entity geometry="primitive: sphere; radius: 0.045" position="0.27 0.94 -1.92" material="color: #e8963c; roughness: 0.45"></a-entity>
-  <a-entity geometry="primitive: sphere; radius: 0.045" position="0.37 0.94 -1.98" material="color: #e8963c; roughness: 0.45"></a-entity>
-  <a-entity geometry="primitive: sphere; radius: 0.042" position="0.33 0.96 -1.94" material="color: #9db45c; roughness: 0.45"></a-entity>
-
-  <!-- ================= KOMPOR (INTERAKTIF) ================= -->
-  <a-entity id="kompor" class="interaktif"slot-model="slot: kompor" position="-1.3 0 -1.95">
-    <a-entity geometry="primitive: box; width: 0.62; height: 0.045; depth: 0.52" position="0 0.895 0"
-      material="color: #14161a; roughness: 0.18; metalness: 0.65" ${BAYANGAN}></a-entity>
-    <a-entity geometry="primitive: torus; radius: 0.068; radiusTubular: 0.009" rotation="-90 0 0" position="-0.13 0.92 -0.11" material="color: #2a2d31; metalness: 0.7; roughness: 0.4"></a-entity>
-    <a-entity geometry="primitive: torus; radius: 0.068; radiusTubular: 0.009" rotation="-90 0 0" position="0.13 0.92 -0.11" material="color: #2a2d31; metalness: 0.7; roughness: 0.4"></a-entity>
-    <a-entity geometry="primitive: torus; radius: 0.068; radiusTubular: 0.009" rotation="-90 0 0" position="-0.13 0.92 0.11" material="color: #2a2d31; metalness: 0.7; roughness: 0.4"></a-entity>
-    <a-entity geometry="primitive: torus; radius: 0.068; radiusTubular: 0.009" rotation="-90 0 0" position="0.13 0.92 0.11" material="color: #2a2d31; metalness: 0.7; roughness: 0.4"></a-entity>
-    <a-entity geometry="primitive: cylinder; radius: 0.018; height: 0.02" rotation="90 0 0" position="-0.1 0.895 0.25" material="color: #c9ced4; metalness: 0.9; roughness: 0.2"></a-entity>
-    <a-entity geometry="primitive: cylinder; radius: 0.018; height: 0.02" rotation="90 0 0" position="0.1 0.895 0.25" material="color: #c9ced4; metalness: 0.9; roughness: 0.2"></a-entity>
-    <!-- panci di atas kompor (dapat digeser posisi tengah / tepi, atau diangkat) -->
-    <a-entity id="grup-panci" class="tetap-tampil" position="-0.13 0 -0.11">
-      <a-entity id="panci-mesh" geometry="primitive: cylinder; radius: 0.13; height: 0.14" position="0 0.99 0"
-        material="color: #9fa8b2; metalness: 0.9; roughness: 0.32" ${BAYANGAN}></a-entity>
-      <a-entity geometry="primitive: torus; radius: 0.11; radiusTubular: 0.012" rotation="-90 0 0" position="0 1.065 0" material="color: #878f99; metalness: 0.9; roughness: 0.3"></a-entity>
-      <a-entity geometry="primitive: sphere; radius: 0.022" position="0 1.075 0" material="color: #2f3338; roughness: 0.5"></a-entity>
-    </a-entity>
-    <!-- api kompor (intensitas & visual adaptif mati, rendah, sedang, tinggi) -->
-    <a-entity id="api-kompor" class="tetap-tampil" api-kompor position="-0.13 0.925 -0.11" visible="false">
-      <!-- api biru inti (efisiensi tinggi) -->
-      <a-entity id="api-biru" geometry="primitive: cone; radiusBottom: 0.05; radiusTop: 0.005; height: 0.07" position="0 0.035 0"
-        material="color: #60a5fa; emissive: #3b82f6; emissiveIntensity: 2.5; transparent: true; opacity: 0.9; depthWrite: false"></a-entity>
-      <!-- api oranye berkobar (intensitas tinggi) -->
-      <a-entity id="api-oranye" geometry="primitive: cone; radiusBottom: 0.055; radiusTop: 0.007; height: 0.12" position="0.005 0.06 0.003"
-        material="color: #ff9d2e; emissive: #ff7a00; emissiveIntensity: 2.2; transparent: true; opacity: 0.92; depthWrite: false"></a-entity>
-      <a-entity id="api-kuning" geometry="primitive: cone; radiusBottom: 0.035; radiusTop: 0.004; height: 0.15" position="-0.008 0.075 -0.004"
-        material="color: #ffd54f; emissive: #ffb300; emissiveIntensity: 2.4; transparent: true; opacity: 0.9; depthWrite: false"></a-entity>
-      <a-entity id="cahaya-api" light="type: point; color: #ff8c3b; intensity: 0; distance: 2.2" position="0 0.28 0"></a-entity>
-    </a-entity>
-    <!-- uap panci -->
-    <a-entity id="uap" class="tetap-tampil" uap-panci position="-0.13 1.1 -0.11" visible="false">
-      <a-entity geometry="primitive: plane; width: 0.1; height: 0.13" material="color: #ffffff; transparent: true; opacity: 0.0; depthWrite: false; side: double"></a-entity>
-      <a-entity geometry="primitive: plane; width: 0.08; height: 0.11" material="color: #ffffff; transparent: true; opacity: 0.0; depthWrite: false; side: double"></a-entity>
-      <a-entity geometry="primitive: plane; width: 0.12; height: 0.15" material="color: #ffffff; transparent: true; opacity: 0.0; depthWrite: false; side: double"></a-entity>
-    </a-entity>
-  </a-entity>
+  <a-entity id="kompor" slot-model="slot: kompor" position="-1.3 0 -1.95"></a-entity>
 
   <!-- hood (dibungkus grup agar mengikuti kompor) -->
   <a-entity id="hood-grup" position="0 0 0" slot-model="slot: hood">
@@ -237,18 +118,7 @@ export function bangunMarkahDapur(): string {
   </a-entity>
 
   <!-- ================= WASTAFEL ================= -->
-  <a-entity geometry="primitive: box; width: 0.56; height: 0.2; depth: 0.42" position="-0.1 0.79 -1.92" material="color: #7c848d; metalness: 0.85; roughness: 0.35"></a-entity>
-  <a-entity geometry="primitive: box; width: 0.5; height: 0.16; depth: 0.36" position="-0.1 0.83 -1.92" material="color: #4a5158; metalness: 0.7; roughness: 0.4"></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.03; height: 0.05" position="-0.1 0.915 -2.1" material="color: #cdd4da; metalness: 0.95; roughness: 0.15"></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.02; height: 0.3" position="-0.1 1.06 -2.1" material="color: #cdd4da; metalness: 0.95; roughness: 0.15"></a-entity>
-  <a-entity geometry="primitive: torus; radius: 0.09; radiusTubular: 0.018; arc: 180" position="-0.1 1.2 -2.04" rotation="0 90 0" material="color: #cdd4da; metalness: 0.95; roughness: 0.15"></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.016; height: 0.12" position="-0.1 1.14 -1.95" material="color: #cdd4da; metalness: 0.95; roughness: 0.15"></a-entity>
-  <!-- keran wastafel (interaktif) -->
-  <a-entity geometry="primitive: box; width: 0.05; height: 0.02; depth: 0.03" position="-0.04 1.22 -2.06" material="color: #3f7fae; metalness: 0.6; roughness: 0.3"></a-entity>
-  <a-entity id="aliran-air" geometry="primitive: cylinder; radius: 0.013; height: 0.28" position="-0.1 1.0 -1.95"
-    material="color: #9fd4f5; transparent: true; opacity: 0.0; emissive: #7dd3fc; emissiveIntensity: 0.25" visible="false"></a-entity>
-  <a-entity id="wastafel" class="interaktif" slot-model="slot: wastafel" geometry="primitive: box; width: 0.62; height: 0.5; depth: 0.5" position="-0.1 1.05 -1.92"
-    material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
+  <a-entity id="wastafel" slot-model="slot: wastafel" position="-0.1 1.05 -1.92"></a-entity>
 
   <!-- ================= RAK BUMBU (INTERAKTIF) ================= -->
   <a-entity id="rak-bumbu" class="interaktif" slot-model="slot: rak-bumbu" position="0.45 1.75 -2.14">
@@ -260,15 +130,6 @@ export function bangunMarkahDapur(): string {
   </a-entity>
   <!-- penanda zona nyaman rak -->
   <a-entity geometry="primitive: plane; width: 0.02; height: 0.6" position="1.02 1.2 -2.242" material="color: #7a8b6f; transparent: true; opacity: 0.35"></a-entity>
-
-  <!-- ================= RAK PANCI BAWAH (INTERAKTIF) ================= -->
-  <a-entity geometry="primitive: box; width: 0.6; height: 0.035; depth: 0.56" position="0.56 0.27 -1.89" material="src: #tx-kayu; color: #a97f52; roughness: 0.65"></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.14; height: 0.12" position="0.48 0.35 -1.85" material="color: #4e565f; metalness: 0.8; roughness: 0.4"></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.115; height: 0.1" position="0.5 0.45 -1.9" material="color: #5d6670; metalness: 0.8; roughness: 0.4"></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.12; height: 0.045" position="0.72 0.315 -1.86" material="color: #33383e; metalness: 0.85; roughness: 0.35"></a-entity>
-  <a-entity geometry="primitive: cylinder; radius: 0.012; height: 0.2" position="0.87 0.315 -1.83" rotation="0 0 78" material="color: #2b2f34; roughness: 0.5"></a-entity>
-  <a-entity id="rak-bawah" class="interaktif" slot-model="slot: rak-bawah" geometry="primitive: box; width: 0.6; height: 0.55; depth: 0.55" position="0.56 0.32 -1.86"
-    material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
 
   <!-- ================= KULKAS (INTERAKTIF) ================= -->
   <a-entity id="kulkas" class="interaktif" slot-model="slot: kulkas" position="1.25 0 -1.86">
@@ -330,8 +191,7 @@ export function bangunMarkahDapur(): string {
       material="color: #fbbf24; transparent: true; opacity: 0.001; depthWrite: false"></a-entity>
     <a-entity id="meja-permukaan" geometry="primitive: box; width: 1.24; height: 0.06; depth: 0.66" position="0 -0.03 0"
       material="src: #tx-marmer; repeat: 1.6 0.9; roughness: 0.22; metalness: 0.05" ${BAYANGAN}></a-entity>
-  </a-entity>
-  <a-entity id="talenan" class="interaktif tetap-tampil" slot-model="slot: talenan" position="0 0.78 0">
+  <a-entity id="talenan" class="interaktif tetap-tampil" slot-model="slot: talenan" position="0 -0.003 0">
     <a-entity geometry="primitive: box; width: 0.42; height: 0.018; depth: 0.3" position="-0.25 0.012 0" material="color: #cfa46f; roughness: 0.55" ${BAYANGAN}></a-entity>
     <a-entity id="pisau" geometry="primitive: box; width: 0.17; height: 0.004; depth: 0.032" position="-0.1 0.024 0.09" rotation="0 -18 0" material="color: #d7dce1; metalness: 0.9; roughness: 0.2"></a-entity>
     <a-entity geometry="primitive: box; width: 0.09; height: 0.014; depth: 0.026" position="0.035 0.028 0.115" rotation="0 -18 0" material="color: #2f3338; roughness: 0.5"></a-entity>
@@ -349,6 +209,7 @@ export function bangunMarkahDapur(): string {
     </a-entity>
     <a-entity geometry="primitive: box; width: 0.07; height: 0.006; depth: 0.02" position="-0.31 0.024 -0.07" material="color: #7d9b4e; roughness: 0.7"></a-entity>
     <a-entity geometry="primitive: box; width: 0.06; height: 0.006; depth: 0.02" position="-0.22 0.024 -0.09" rotation="0 30 0" material="color: #7d9b4e; roughness: 0.7"></a-entity>
+  </a-entity>
   </a-entity>
   </a-entity>
 

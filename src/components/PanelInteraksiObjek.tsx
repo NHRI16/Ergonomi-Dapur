@@ -82,7 +82,6 @@ export default function PanelInteraksiObjek() {
               {(target === "lampu-meja" || target === "saklar-lampu") && <Lightbulb size={20} className="text-amber-300" />}
               {(target === "ventilasi" || target === "hood") && <Wind size={20} className="text-amber-300" />}
               {target === "wastafel" && <Droplets size={20} className="text-amber-300" />}
-              {target === "rak-bawah" && <CookingPot size={20} className="text-amber-300" />}
               {target === "stasiun-ukur" && <Ruler size={20} className="text-amber-300" />}
               {target === "papan-skor" && <Activity size={20} className="text-amber-300" />}
             </div>
@@ -96,7 +95,6 @@ export default function PanelInteraksiObjek() {
                   {(target === "lampu-meja" || target === "saklar-lampu") && "Pengaturan Pencahayaan Dapur"}
                   {(target === "ventilasi" || target === "hood") && "Ventilasi & Sirkulasi Udara"}
                   {target === "wastafel" && "Wastafel & Cuci Bahan"}
-                  {target === "rak-bawah" && "Rak Panci Bawah (Teknik Angkat)"}
                   {target === "stasiun-ukur" && "Stasiun Pengukur Antropometri"}
                   {target === "papan-skor" && "Evaluasi Lengkap Dapur"}
                 </h2>
@@ -828,46 +826,6 @@ export default function PanelInteraksiObjek() {
               <p className="text-[11px] text-krem-100/70 leading-snug">
                 Urutan higienis yang benar: cuci bahan makanan di wastafel sebelum dipotong di talenan untuk mencegah kontaminasi silang.
               </p>
-            </div>
-          )}
-
-          {/* ===================== RAK PANCI BAWAH ===================== */}
-          {target === "rak-bawah" && (
-            <div className="kartu-bagian p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-[12px] font-bold text-krem-50 flex items-center gap-2">
-                    <CookingPot size={15} className="text-amber-400" /> Rak Panci Bagian Bawah
-                  </div>
-                  <div className="text-[10.5px] text-krem-100/60 mt-0.5">
-                    Sikap Anda saat ini: <span className="font-bold text-amber-300 capitalize">{st.sikap}</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    toko.setStatus({ sikap: st.sikap === "jongkok" ? "berdiri" : "jongkok" });
-                    audio.klik();
-                  }}
-                  className="px-3 py-1.5 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-200 text-[11px] font-bold"
-                >
-                  {st.sikap === "jongkok" ? "Berdiri" : "Jongkok (C)"}
-                </button>
-              </div>
-              <button
-                onClick={() => {
-                  if (st.sikap === "jongkok") {
-                    toko.setParams({ panciDiambil: p.panciDiambil + 1, panciAmbilJongkok: true });
-                    audio.sukses();
-                    toko.toast("Posisi aman, punggung tidak terlalu membungkuk.", "baik");
-                  } else {
-                    audio.gagal();
-                    toko.toast("Anda membungkuk penuh! Tekan C untuk jongkok demi melindungi tulang belakang.", "buruk");
-                  }
-                }}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-terakota-500 text-arang-950 font-extrabold text-[12px] hover:brightness-110 active:scale-95 transition"
-              >
-                Ambil Panci dari Rak Bawah
-              </button>
             </div>
           )}
 

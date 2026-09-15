@@ -1,11 +1,37 @@
 {
   "meja-atas": {
-    "jalur": "/models/kitchen_table_3.glb"
+    "jalur": "/models/kitchen_table.glb",
+    "skala": 1,
+    "sembunyikanPrimitif": true
   },
   "talenan": {
-    "jalur": ""
+    "jalur": "/models/cutting_board_with_raw_meat_handpainted_free.glb",
+    "sembunyikanPrimitif": true
   },
   "kulkas": {
-    "jalur": "/models/coca_cola_refrigerator_1.glb"
+    "jalur": "/models/coca_cola_refrigerator.glb",
+    "skala": 1,
+    "putarY": 180,
+    "offsetY": 0,
+    "sembunyikanPrimitif": true
+  },
+  "wastafel": {
+    "jalur": "",
+    "skala": 1,
+    "putarY": 0,
+    "offsetY": 0,
+    "sembunyikanPrimitif": true
+  },
+  "hood": {
+    "jalur": ""
+  },
+  "kompor": {
+    "jalur": ""
+  },
+  "lampu-meja": {
+    "jalur": ""
+  },
+  "stasiun-ukur": {
+    "jalur": ""
   }
 }

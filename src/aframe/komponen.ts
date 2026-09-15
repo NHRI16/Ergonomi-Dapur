@@ -12,6 +12,8 @@
 import "aframe";
 import { toko, warnaSkor, labelSkor, MAKS_PILAR } from "../game/store";
 import { katalog } from "../game/katalog";
+import * as rendererModel from "./renderer";
+import { DINDING_RUANG } from "./renderer";
 
 const AFRAME = (window as any).AFRAME;
 
@@ -510,8 +512,12 @@ export function pastikanKomponen() {
     schema: { slot: { type: "string" } },
     init() {
       this.wadah = null;
+      this.modelIsi = null;
+      this.hitbox = null;
       this.jalurAktif = "";
-      this.skalaDasarMeja = null;
+      this.batasBawaan = null;
+      this.batasModel = null;
+      this.skalaNormalisasi = null;
       this.tinggiModelTerakhir = null;
       this.modelSiap = false;
       this.terapkan();
@@ -520,57 +526,11 @@ export function pastikanKomponen() {
     remove() {
       this.batal && this.batal();
     },
-    selaraskanAlas() {
-      if (!this.wadah) return;
-      const obj = this.wadah.getObject3D("mesh");
-      const induk = this.el.object3D;
-      if (!obj || !induk) return;
-
-      const kotak = new AFRAME.THREE.Box3().setFromObject(obj);
-      const posisiInduk = new AFRAME.THREE.Vector3();
-      induk.getWorldPosition(posisiInduk);
-      const skala = Number(this.wadah.getAttribute("scale")?.x) || 1;
-      const alasLokal = (kotak.min.y - posisiInduk.y) / skala;
-      const posisi = this.wadah.getAttribute("position") || { x: 0, y: 0, z: 0 };
-      this.wadah.setAttribute("position", `0 ${posisi.y - alasLokal} 0`);
-    },
-    sesuaikanUkuranMeja() {
-      if (!this.wadah || this.data.slot !== "meja-atas") return;
-      const obj = this.wadah.getObject3D("mesh");
-      if (!obj) return;
-      const ukuran = new AFRAME.THREE.Vector3();
-      new AFRAME.THREE.Box3().setFromObject(obj).getSize(ukuran);
-      if (ukuran.x < 0.001 || ukuran.y < 0.001 || ukuran.z < 0.001) return;
-      const faktor = Number(this.wadah.getAttribute("scale")?.x) || 1;
-      const skala = {
-        x: faktor * 1.28 / ukuran.x,
-        y: faktor * 0.78 / ukuran.y,
-        z: faktor * 0.7 / ukuran.z,
-      };
-      this.wadah.setAttribute(
-        "scale",
-        `${skala.x.toFixed(5)} ${skala.y.toFixed(5)} ${skala.z.toFixed(5)}`,
-      );
-      this.skalaDasarMeja = skala;
-    },
     aturTinggiMeja(tinggi: number) {
-      if (!this.wadah || !this.skalaDasarMeja || this.data.slot !== "meja-atas") return;
+      if (this.data.slot !== "meja-atas") return;
       if (this.tinggiModelTerakhir !== null && Math.abs(this.tinggiModelTerakhir - tinggi) < 0.001) return;
       this.tinggiModelTerakhir = tinggi;
-      const rasio = tinggi / 0.78;
-      const skala = this.skalaDasarMeja;
-      this.wadah.setAttribute("scale", `${skala.x} ${skala.y * rasio} ${skala.z}`);
-      this.selaraskanAlas();
-    },
-    aturVisibilitas(s) {
-      const sembunyi = !!s.jalur && s.sembunyikanPrimitif && this.modelSiap;
-      Array.from(this.el.children).forEach((anak) => {
-        if (anak === this.wadah) return;
-        if (anak.classList && anak.classList.contains("tetap-tampil")) return;
-        if (anak.hasAttribute && anak.hasAttribute("slot-model")) return;
-        if (anak.hasAttribute && anak.hasAttribute("light")) return;
-        anak.setAttribute("visible", !sembunyi);
-      });
+      rendererModel.aturTinggiMeja(this, tinggi);
     },
     terapkan() {
       const s = katalog.ambil(this.data.slot);
@@ -582,16 +542,19 @@ export function pastikanKomponen() {
         if (!this.wadah) {
           this.wadah = document.createElement("a-entity");
           this.wadah.classList.add("wadah-model");
+          this.modelIsi = document.createElement("a-entity");
+          this.wadah.appendChild(this.modelIsi);
           el.appendChild(this.wadah);
         }
         if (this.jalurAktif !== s.jalur) {
           this.jalurAktif = s.jalur;
-          this.wadah.setAttribute("gltf-model", `url(${s.jalur})`);
-          this.wadah.addEventListener(
+          this.batasBawaan = rendererModel.batasBawaan(this);
+          this.modelIsi.setAttribute("gltf-model", `url(${s.jalur})`);
+          this.modelIsi.addEventListener(
             "model-error",
             () => {
               this.modelSiap = false;
-              this.aturVisibilitas(s);
+              rendererModel.aturVisibilitas(this, s, this.modelSiap);
               toko.toast(
                 `Model "${s.nama}" gagal dimuat. Pastikan berkas .glb valid dan dapat diakses.`,
                 "buruk"
@@ -599,16 +562,15 @@ export function pastikanKomponen() {
             },
             { once: true }
           );
-          this.wadah.addEventListener(
+          this.modelIsi.addEventListener(
             "model-loaded",
             () => {
               this.modelSiap = true;
-              this.aturVisibilitas(s);
+              rendererModel.aturVisibilitas(this, s, this.modelSiap);
               toko.toast(`Model "${s.nama}" berhasil dipasang.`, "baik");
-              this.sesuaikanUkuranMeja();
-              this.selaraskanAlas();
+              rendererModel.normalisasiModel(this);
               // Aktifkan bayangan pada seluruh mesh model
-              const obj = this.wadah.getObject3D("mesh");
+              const obj = this.modelIsi.getObject3D("mesh");
               if (obj)
                 obj.traverse((n) => {
                   if (n.isMesh) {
@@ -620,18 +582,15 @@ export function pastikanKomponen() {
             { once: true }
           );
         }
-        this.wadah.setAttribute("scale", `${s.skala} ${s.skala} ${s.skala}`);
-        this.wadah.setAttribute("rotation", `0 ${s.putarY} 0`);
-        this.wadah.setAttribute("position", `0 ${s.offsetY} 0`);
+        rendererModel.terapkanTransformasi(this, s);
       } else if (this.wadah) {
-        el.removeChild(this.wadah);
-        this.wadah = null;
+        rendererModel.bersihkanModel(this);
         this.jalurAktif = "";
         this.modelSiap = false;
       }
 
       // Tampilkan / sembunyikan primitif bawaan
-      this.aturVisibilitas(s);
+      rendererModel.aturVisibilitas(this, s, this.modelSiap);
     },
   });
 
@@ -650,6 +609,8 @@ export function pastikanKomponen() {
     ],
     // Kata kunci furniture/interior → sembunyikan. Hanya kata SPESIFIK & aman.
     KATA_SEMBUNYI: [
+      "sliding window top-bottom",
+      "wooden shelf",
       "chair","kursi","sofa","couch","armchair","stool","bench",
       "desk","worktable","officetable","computertable",
       "monitor","computer","laptop","keyboard","mouse_pad","mousepad",
@@ -659,15 +620,17 @@ export function pastikanKomponen() {
       "curtain","venetian","blind_slat","jalousie",
       "aircon","airconditioner","hvac",
       "furniture","furnishing",
+      "cabinet","cabinetry","cupboard","kitchen","counter","countertop",
+      "sink","stove","refrigerator","appliance","island","worktop",
       "shelf","bookshelf",              // Wooden Shelf_32 (rak kayu)
       "trash","trashbin","trash_bin"   // Trash bin_31
     ],
     // faktor = max(5.5/2.48, 3.0/0.94, 5/1.83) = max(2.22, 3.21, 2.73) = 3.21
     // Hasil: lebar≈7.96m, tinggi≈3.0m (pas primitif), dalam≈5.88m
     // Dinding X ±3.98m, Z back ≈-2.44m (setelah geser +0.5m), Z front ≈+3.44m
-    TARGET_LEBAR: 5.5,  // X  — tidak mendominasi (5.5/2.48=2.22 < 3.21)
-    TARGET_TINGGI: 3.0, // Y  — DRIVER faktor (3.0/0.94=3.21) → ceiling tepat 3.0m
-    TARGET_DALAM: 5,    // Z  — tidak mendominasi (5/1.83=2.73 < 3.21)
+    TARGET_LEBAR: DINDING_RUANG.kiri + DINDING_RUANG.kanan,
+    TARGET_TINGGI: DINDING_RUANG.tinggi,
+    TARGET_DALAM: DINDING_RUANG.belakang + DINDING_RUANG.depan,
     init() {
       this.el.addEventListener("model-loaded", () => {
         const obj = this.el.getObject3D("mesh");
@@ -697,7 +660,7 @@ export function pastikanKomponen() {
           this.el.object3D.position.z += -tengah.z;
           // Geser +0.5m ke arah dapur (dinding belakang GLB ≈-2.44m, 0.55m di
           // belakang kabinet z≈-1.89m — proporsional dengan tata letak dapur)
-          this.el.object3D.position.z += 0.5;
+          this.el.object3D.position.z += 0.7;
         }
 
         // --- 2. Filter: whitelist struktur vs blacklist furniture ---
@@ -710,17 +673,18 @@ export function pastikanKomponen() {
           if (!n.isMesh && !(n.isObject3D && n.children && n.children.length > 0)) return;
           const nama = (n.name || "").toLowerCase();
 
-          // Whitelist: jika nama mengandung kata struktur → paksa tampil
-          if (kataSt.some((k) => nama.includes(k))) {
-            n.visible = true;
-            if (n.isMesh) { n.castShadow = false; n.receiveShadow = true; }
-            return;
-          }
-
-          // Blacklist: jika nama mengandung kata furniture spesifik → sembunyikan
+          // Furniture/appliance selalu dihapus lebih dulu, bahkan jika namanya
+          // juga memuat kata seperti "wall" atau "structure".
           if (kataSb.some((k) => nama.includes(k))) {
             n.visible = false;
             n.traverse((anak) => { anak.visible = false; });
+            return;
+          }
+
+          // Whitelist: struktur ruangan tetap tampil.
+          if (kataSt.some((k) => nama.includes(k))) {
+            n.visible = true;
+            if (n.isMesh) { n.castShadow = false; n.receiveShadow = true; }
             return;
           }
 

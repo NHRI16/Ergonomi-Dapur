@@ -8,16 +8,17 @@
 
 import { toko, lebarLorong, labelSkor, jarakRakKompor, antropometri, BATAS_TATA, jepit } from "../game/store";
 import { audio } from "../game/audio";
+import { POSISI_TEMPEL } from "./renderer";
 
 const REDAM = (nilai: number, target: number, laju: number, dt: number) =>
   nilai + (target - nilai) * Math.min(1, (dt / 1000) * laju);
 
 /** Objek yang dapat dipindahkan bebas pada Mode Tata Letak. */
-export const OBJEK_TATA = ["kompor", "kulkas", "meja-atas", "rak-bumbu"];
+export const OBJEK_TATA = ["kulkas", "meja-atas", "rak-bumbu"];
 /** Peralatan tetap yang membuka opsi interaksi saat diklik. */
 const OBJEK_AKSI_LANGSUNG = new Set([
-  "stasiun-ukur", "saklar-lampu", "lampu-meja", "wastafel", "hood",
-  "talenan", "ventilasi", "rak-bawah", "papan-skor", "kompor", "kulkas", "rak-bumbu",
+  "stasiun-ukur", "saklar-lampu", "lampu-meja", "hood",
+  "talenan", "ventilasi", "papan-skor", "kulkas", "rak-bumbu",
 ]);
 const NAMA_TATA: Record<string, string> = {
   kompor: "Kompor",
@@ -57,8 +58,6 @@ function poseCincin(id: string, p: any) {
       return { pos: [-0.1, 1.24, -1.88], rot: [-90, 0, 0], r: 0.3 };
     case "hood":
       return { pos: [-1.3, 2.08, -1.8], rot: [0, 0, 0], r: 0.34 };
-    case "rak-bawah":
-      return { pos: [0.56, 0.32, -1.7], rot: [-90, 0, 0], r: 0.32 };
     case "stasiun-ukur":
       return { pos: [-2.18, 0.03, 1.0], rot: [-90, 0, 0], r: 0.34 };
     case "papan-skor":
@@ -573,23 +572,6 @@ export class PengendaliDapur {
         if (buka) toko.toast("Ventilasi terbuka — sirkulasi udara baik, asap dan panas keluar.", "baik");
         break;
       }
-      case "rak-bawah": {
-        if (k.status.sikap === "jongkok") {
-          toko.setParams({ panciDiambil: p.panciDiambil + 1, panciAmbilJongkok: true });
-          toko.toast(
-            "Teknik angkat benar — lutut menekuk, punggung lurus, beban ditopang otot paha bukan diskus lumbal.",
-            "baik"
-          );
-          audio.sukses();
-        } else {
-          toko.toast(
-            "Anda membungkuk penuh untuk meraih rak bawah! Tekanan pada diskus lumbal melonjak — tekan C untuk jongkok.",
-            "buruk"
-          );
-          audio.gagal();
-        }
-        break;
-      }
       case "papan-skor": {
         audio.klik();
         const k2 = toko.keadaan;
@@ -749,9 +731,13 @@ export class PengendaliDapur {
     // Pratinjau lokasi penempatan
     if (el.hantu) {
       el.hantu.setAttribute("visible", true);
-      const px = patch.komporX ?? patch.mejaX ?? (patch.rakGeserX !== undefined ? 0.45 + patch.rakGeserX / 100 : patch.dekor1X ?? patch.dekor2X ?? (patch.kulkasGeser !== undefined ? 1.45 - patch.kulkasGeser / 100 : x));
+      const px = st.dipegang === "meja-atas"
+        ? this.v.mejaX
+        : patch.komporX ?? patch.mejaX ?? (patch.rakGeserX !== undefined ? 0.45 + patch.rakGeserX / 100 : patch.dekor1X ?? patch.dekor2X ?? (patch.kulkasGeser !== undefined ? 1.45 - patch.kulkasGeser / 100 : x));
       const pz =
-        patch.komporJarak !== undefined
+        st.dipegang === "meja-atas"
+          ? this.v.mejaZ
+          : patch.komporJarak !== undefined
           ? -2.05 + patch.komporJarak / 100
           : patch.mejaZ ?? patch.kulkasZ ?? patch.dekor1Z ?? patch.dekor2Z ?? (patch.rakTinggi !== undefined ? -2.14 : z);
       el.hantu.setAttribute("position", v3(px, 0.02, pz));
@@ -769,7 +755,9 @@ export class PengendaliDapur {
         "dekor-1": [0.58, 0.9, 0.58, p.dekor1Tinggi / 100],
         "dekor-2": [0.58, 0.9, 0.58, p.dekor2Tinggi / 100],
       };
-      const [lebar, tinggi, dalam, alas] = ukuran[st.dipegang] || ukuran["dekor-1"];
+      const nilaiUkuran = ukuran[st.dipegang] || ukuran["dekor-1"];
+      const [lebar, tinggiAwal, dalam, alas] = nilaiUkuran;
+      const tinggi = st.dipegang === "meja-atas" ? this.v.mejaH : tinggiAwal;
       const putar: Record<string, number> = {
         kompor: p.rotKompor,
         kulkas: p.rotKulkas,
@@ -889,13 +877,13 @@ export class PengendaliDapur {
 
     // Meja potong: tinggi + posisi bebas
     v.mejaH = REDAM(v.mejaH, p.mejaTinggi / 100, 8, dt);
-    v.mejaX = REDAM(v.mejaX, p.mejaX, 8, dt);
-    v.mejaZ = REDAM(v.mejaZ, p.mejaZ, 8, dt);
+    const lajuGeserMeja = k.status.dipegang === "meja-atas" ? 22 : 8;
+    v.mejaX = REDAM(v.mejaX, p.mejaX, lajuGeserMeja, dt);
+    v.mejaZ = REDAM(v.mejaZ, p.mejaZ, lajuGeserMeja, dt);
     // Semua bagian meja memakai satu rangka, agar kaki/palang ikut saat meja dipindah atau diputar.
     el.mejaRangka?.setAttribute("position", v3(v.mejaX, 0, v.mejaZ));
     el.mejaRangka?.setAttribute("rotation", v3(0, p.rotMeja, 0));
     el.mejaAtas?.setAttribute("position", v3(0, v.mejaH, 0));
-    el.talenan?.setAttribute("position", v3(0, v.mejaH - 0.003, 0));
     el.mejaRangka?.components?.["slot-model"]?.aturTinggiMeja?.(v.mejaH);
     if (el.mejaKakiKiri) {
       el.mejaKakiKiri.setAttribute("scale", v3(1, v.mejaH, 1));
@@ -913,9 +901,10 @@ export class PengendaliDapur {
     el.dekor2?.setAttribute("rotation", v3(0, p.dekor2Rot, 0));
 
     // Rak bumbu: ketinggian + posisi horizontal
+    const titikRak = POSISI_TEMPEL.rakBumbu();
     v.rakY = REDAM(v.rakY, p.rakTinggi / 100, 8, dt);
-    v.rakX = REDAM(v.rakX, 0.45 + p.rakGeserX / 100, 8, dt);
-    el.rakBumbu?.setAttribute("position", v3(v.rakX, v.rakY, -2.14));
+    v.rakX = REDAM(v.rakX, titikRak.x + p.rakGeserX / 100, 8, dt);
+    el.rakBumbu?.setAttribute("position", v3(v.rakX, v.rakY, titikRak.z));
 
     // Hood: kipas berputar + LED status
     if (p.hoodNyala) {
@@ -943,7 +932,8 @@ export class PengendaliDapur {
 
     // Jendela: geser vertikal + aliran udara
     v.jendela = REDAM(v.jendela, p.ventilasiBuka ? 0.5 : 0, 5, dt);
-    el.daunJendela?.setAttribute("position", v3(2.44, 1.28 + v.jendela, -0.4));
+    const titikJendela = POSISI_TEMPEL.jendela();
+    el.daunJendela?.setAttribute("position", v3(titikJendela.x - 0.06, 1.28 + v.jendela, titikJendela.z));
     el.aliranUdara?.setAttribute("visible", p.ventilasiBuka && v.jendela > 0.2);
 
     // Lampu meja: sorot fokus / sebar

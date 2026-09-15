@@ -749,21 +749,6 @@ export function evaluasiObjek(
       }
       break;
     }
-    case "rak-bawah": {
-      namaObjek = "Rak Panci Bawah";
-      if (sikap === "jongkok") {
-        judul = "Teknik Mengangkat Ergonomis";
-        teks = "Posisi aman, punggung tidak terlalu membungkuk saat mengambil panci dari rak bawah.";
-        saran = "Beban ditopang otot paha dan kaki, bukan diskus lumbal tulang belakang.";
-        tingkat = "baik";
-      } else {
-        judul = "Postur Mengangkat Berisiko";
-        teks = "Anda membungkuk penuh untuk meraih rak bawah! Risiko cedera tulang belakang.";
-        saran = "Tekan C untuk berjongkok sebelum mengambil barang di rak bagian bawah.";
-        tingkat = "buruk";
-      }
-      break;
-    }
     default: {
       judul = `Evaluasi ${namaObjek}`;
       teks = `Pengaturan dapur Anda ${skor}% ergonomis (${labelSkor(skor)}).`;
@@ -874,13 +859,6 @@ export function teksPrompt(
       return {
         nama: "Hood Penyedot Asap",
         aksi: [{ kunci: "Klik", label: "Buka opsi penyedot asap & udara" }],
-      };
-    case "rak-bawah":
-      return {
-        nama: "Rak Panci Bawah",
-        aksi: [
-          { kunci: "Klik", label: "Buka opsi rak panci & teknik angkat" },
-        ],
       };
     case "papan-skor":
       return {

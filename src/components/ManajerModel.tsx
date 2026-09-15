@@ -18,6 +18,8 @@ import {
   RotateCw,
   Trash2,
   X,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { katalog, type SlotModel } from "../game/katalog";
 import { gunakanToko, toko } from "../game/store";
@@ -25,6 +27,10 @@ import { audio } from "../game/audio";
 
 function gunakanKatalog(): SlotModel[] {
   return useSyncExternalStore(katalog.langganan, katalog.dapatkan);
+}
+
+function gunakanStatusSinkronisasi() {
+  return useSyncExternalStore(katalog.langgananStatus, katalog.dapatkanStatus);
 }
 
 function BarisSlot({ s }: { s: SlotModel }) {
@@ -207,7 +213,11 @@ function BarisSlot({ s }: { s: SlotModel }) {
 export default function ManajerModel() {
   const buka = gunakanToko((s) => s.status.modelBuka);
   const slot = gunakanKatalog();
+  const statusSinkronisasi = gunakanStatusSinkronisasi();
   if (!buka) return null;
+
+  const statusTerhubung = statusSinkronisasi === "terhubung";
+  const statusMenghubungkan = statusSinkronisasi === "menghubungkan";
 
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-layu-masuk">
@@ -224,6 +234,14 @@ export default function ManajerModel() {
                 public/models/
               </code>
               .
+            </p>
+            <p className={`mt-1 flex items-center gap-1 text-[10px] ${statusTerhubung ? "text-emerald-300/80" : "text-amber-300/80"}`}>
+              {statusTerhubung ? <Wifi size={10} /> : <WifiOff size={10} />}
+              {statusTerhubung
+                ? "Tersinkron dengan server bersama"
+                : statusMenghubungkan
+                  ? "Menghubungkan ke server bersama..."
+                  : "Offline — perubahan hanya tersimpan di perangkat ini"}
             </p>
           </div>
           <button
@@ -243,11 +261,11 @@ export default function ManajerModel() {
             <em>Download 3D Model</em>), lalu klik{" "}
             <span className="font-semibold text-krem-50">Pilih berkas .glb</span> di bawah. File
             akan{" "}
-            <span className="font-semibold text-emerald-300">otomatis disimpan</span> ke{" "}
+              <span className="font-semibold text-emerald-300">otomatis disimpan dan di-stage ke Git</span> ke{" "}
             <code className="rounded bg-arang-950/70 px-1 py-px text-[10px] text-amber-200">
               public/models/
             </code>{" "}
-            — permanen dan bisa di-
+            — permanen, siap di-commit dan di-
             <code className="rounded bg-arang-950/70 px-1 py-px text-[10px] text-amber-200">
               git push
             </code>

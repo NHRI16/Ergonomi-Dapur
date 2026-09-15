@@ -85,16 +85,6 @@ export const SLOT_BAWAAN: SlotModel[] = [
     sembunyikanPrimitif: true,
   },
   {
-    id: "rak-bawah",
-    nama: "Rak Bawah Kompor",
-    keterangan: "Rak tetap di bawah area kompor.",
-    jalur: "",
-    skala: 1,
-    putarY: 0,
-    offsetY: 0,
-    sembunyikanPrimitif: true,
-  },
-  {
     id: "lampu-meja",
     nama: "Lampu Meja",
     keterangan: "Lampu tetap di atas meja potong.",
@@ -149,9 +139,13 @@ export const SLOT_BAWAAN: SlotModel[] = [
 const KUNCI_SIMPAN = "ergodapur.katalog.v1";
 
 type Pendengar = () => void;
+type StatusSinkronisasi = "menghubungkan" | "terhubung" | "offline";
 
 class KatalogModel {
   private pendengar = new Set<Pendengar>();
+  private pendengarStatus = new Set<Pendengar>();
+  private statusSinkronisasi: StatusSinkronisasi = "menghubungkan";
+  private eventSource: EventSource | null = null;
   slot: SlotModel[];
   /** URL objek sementara dari berkas lokal (tidak ikut disimpan). */
   private urlSementara = new Map<string, string>();
@@ -160,6 +154,7 @@ class KatalogModel {
     this.slot = SLOT_BAWAAN.map((s) => ({ ...s }));
     this.muat();
     void this.muatManifestProyek();
+    void this.mulaiSinkronisasi();
   }
 
   private muat() {
@@ -204,11 +199,11 @@ class KatalogModel {
         const konfigurasi = manifest[s.id];
         if (!konfigurasi) return s;
         berubah = true;
-        const lokal = s.jalur.startsWith("blob:") ? s.jalur : "";
         return {
           ...s,
           ...konfigurasi,
-          jalur: konfigurasi.jalur || lokal || s.jalur,
+          jalur: konfigurasi.jalur !== undefined ? konfigurasi.jalur : s.jalur,
+          sembunyikanPrimitif: konfigurasi.jalur ? true : (konfigurasi.sembunyikanPrimitif ?? s.sembunyikanPrimitif),
           id: s.id,
           nama: s.nama,
           keterangan: s.keterangan,
@@ -220,10 +215,65 @@ class KatalogModel {
     }
   }
 
+  private terapkanManifest(manifest: Record<string, Partial<SlotModel>>) {
+    this.slot = SLOT_BAWAAN.map((s) => {
+      const konfigurasi = manifest[s.id];
+      if (!konfigurasi) return s;
+      return {
+        ...s,
+        ...konfigurasi,
+        id: s.id,
+        nama: s.nama,
+        keterangan: s.keterangan,
+        jalur: konfigurasi.jalur !== undefined ? konfigurasi.jalur : s.jalur,
+      };
+    });
+    this.simpan();
+    this.emit();
+  }
+
+  private ubahStatus(status: StatusSinkronisasi) {
+    if (this.statusSinkronisasi === status) return;
+    this.statusSinkronisasi = status;
+    this.pendengarStatus.forEach((fn) => fn());
+  }
+
+  private async mulaiSinkronisasi() {
+    try {
+      const resp = await fetch("/api/catalog", { cache: "no-store" });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const json = (await resp.json()) as { slots?: Record<string, Partial<SlotModel>> };
+      if (json.slots) this.terapkanManifest(json.slots);
+      this.ubahStatus("terhubung");
+    } catch {
+      this.ubahStatus("offline");
+    }
+
+    if (typeof EventSource === "undefined") return;
+    this.eventSource = new EventSource("/api/catalog/events");
+    this.eventSource.addEventListener("katalog", (event) => {
+      try {
+        const manifest = JSON.parse((event as MessageEvent).data) as Record<string, Partial<SlotModel>>;
+        this.terapkanManifest(manifest);
+        this.ubahStatus("terhubung");
+      } catch {
+        /* abaikan event rusak */
+      }
+    });
+    this.eventSource.onerror = () => this.ubahStatus("offline");
+  }
+
   langganan = (fn: Pendengar) => {
     this.pendengar.add(fn);
     return () => this.pendengar.delete(fn);
   };
+
+  langgananStatus = (fn: Pendengar) => {
+    this.pendengarStatus.add(fn);
+    return () => this.pendengarStatus.delete(fn);
+  };
+
+  dapatkanStatus = () => this.statusSinkronisasi;
 
   dapatkan = () => this.slot;
 
@@ -238,6 +288,21 @@ class KatalogModel {
     this.slot = this.slot.map((s) => (s.id === id ? { ...s, ...patch } : s));
     this.simpan();
     this.emit();
+    void this.kirimPatch(id, patch);
+  }
+
+  private async kirimPatch(id: string, patch: Partial<SlotModel>) {
+    try {
+      const resp = await fetch("/api/catalog", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, patch }),
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      this.ubahStatus("terhubung");
+    } catch {
+      this.ubahStatus("offline");
+    }
   }
 
   /** Pasang berkas .glb/.gltf dari komputer pengguna.
@@ -267,7 +332,10 @@ class KatalogModel {
             URL.revokeObjectURL(lama);
             this.urlSementara.delete(id);
           }
-          this.perbarui(id, { jalur: json.path });
+          this.slot = this.slot.map((s) => (s.id === id ? { ...s, jalur: json.path } : s));
+          this.simpan();
+          this.emit();
+          this.ubahStatus("terhubung");
           return {
             ok: true,
             jalur: json.path,
@@ -314,6 +382,11 @@ class KatalogModel {
     this.slot = SLOT_BAWAAN.map((s) => ({ ...s }));
     this.simpan();
     this.emit();
+    void fetch("/api/catalog", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: "__reset__" }),
+    }).catch(() => this.ubahStatus("offline"));
   }
 }
 
